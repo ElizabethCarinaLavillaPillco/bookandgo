@@ -25,6 +25,7 @@ const TourCard = ({ tour }) => {
     <Link
       to={`/tours/${tour.id}`}
       className="group block bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden hover:-translate-y-2"
+      style={{ textDecoration: 'none' }}
     >
       {/* Imagen */}
       <div className="relative h-56 overflow-hidden">
