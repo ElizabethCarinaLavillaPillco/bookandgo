@@ -8,6 +8,7 @@ import MainLayout from './shared/components/Layout/MainLayout';
 // Pages
 import HomePage from './features/tours/pages/HomePage';
 import ToursPage from './features/tours/pages/ToursPage';
+import TourDetailPage from './features/tours/pages/TourDetailPage'; // 👈 Importa esto
 import LoginPage from './features/auth/pages/LoginPage';
 import RegisterPage from './features/auth/pages/RegisterPage';
 
@@ -44,6 +45,7 @@ function App() {
           <Route path="/" element={<MainLayout />}>
             <Route index element={<HomePage />} />
             <Route path="tours" element={<ToursPage />} />
+            <Route path="tours/:id" element={<TourDetailPage />} /> {/* 👈 AGREGA ESTA LÍNEA */}
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />
             <Route path="become-agency" element={<RegisterPage />} />
@@ -56,6 +58,5 @@ function App() {
     </QueryClientProvider>
   );
 }
-
 
 export default App;

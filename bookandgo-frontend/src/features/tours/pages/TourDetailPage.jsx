@@ -3,15 +3,17 @@ import { useParams, Link } from 'react-router-dom';
 import { 
   Heart, Star, MapPin, Clock, Users, Calendar, 
   Check, X, ChevronLeft, ChevronRight, Share2,
-  Mountain, Utensils, Camera, Shield
+  Mountain, Shield
 } from 'lucide-react';
 import useCartStore from '../../../store/cartStore';
+import { toursApi } from '../../../shared/utils/api';
 import './TourDetailPage.css';
 
 const TourDetailPage = () => {
   const { id } = useParams();
   const [tour, setTour] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // 👈 AGREGADO
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedDate, setSelectedDate] = useState('');
   const [numberOfPeople, setNumberOfPeople] = useState(1);
@@ -19,59 +21,30 @@ const TourDetailPage = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const { addItem } = useCartStore();
 
+  // 👇 FUNCIÓN ÚNICA Y CORRECTA
   useEffect(() => {
-    fetchTourDetail();
-  }, [id]);
+    const fetchTour = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        console.log('Fetching tour:', id); // Debug
+        
+        const response = await toursApi.show(id);
+        console.log('Tour data:', response.data); // Debug
+        
+        setTour(response.data);
+      } catch (err) {
+        console.error('Error fetching tour:', err);
+        setError('No se pudo cargar el tour');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchTourDetail = async () => {
-    setLoading(true);
-    try {
-      // const response = await api.get(`/tours/${id}`);
-      // setTour(response.data);
-      
-      // Datos de ejemplo
-      setTour({
-        id: 1,
-        title: 'Excursión a Rainbow Mountain Día Completo Opcional Valle Rojo',
-        description: 'En este emocionante tour de un día, comenzaremos con el recojo en tu hotel en Cusco para trasladarnos en nuestro cómodo transporte hacia Pitumarca, Moray y las Minas de Sal de Maras, donde podremos admirar impresionantes ruinas incas y aprender sobre su historia. Luego, disfrutaremos de un delicioso almuerzo en Urubamba antes de continuar hacia Ollantaytambo, otro importante sitio arqueológico.',
-        featured_image: 'https://images.unsplash.com/photo-1531068atu-5c5272a41129?w=1200',
-        images: [
-          'https://images.unsplash.com/photo-1531068-5c5272a41129?w=800',
-          'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
-          'https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=800',
-          'https://images.unsplash.com/photo-1580619305218-8423a7ef79b4?w=800',
-        ],
-        price: 320,
-        duration_days: 1,
-        duration_hours: 0,
-        max_people: 15,
-        rating: 4.9,
-        total_reviews: 2752,
-        difficulty_level: 'moderate',
-        location_city: 'Cusco',
-        category: { name: 'Cultura y Aventura' },
-        agency: {
-          business_name: 'Inca Adventures SAC',
-          rating: 4.8,
-          total_reviews: 156,
-        },
-        itinerary: `▸ Día 1: VALLE SACRADO Y CONEXION
-En este emocionante tour de un día, comenzaremos con el recojo en tu hotel en Cusco para trasladarnos en nuestro cómodo transporte hacia Pitumarca, Moray y las Minas de Sal de Maras.
-
-Por la tarde, abordaremos el tren en Ollantaytambo hacia Aguas Calientes, el pueblo base de Machupicchu. En Aguas Calientes, te llevaremos al hotel Machupicchu Inn para el check-in y un breve descanso.
-
-▸ Día 2: VISITA A MACHUPICCHU
-A las 7:00 PM, nuestro guía ofrecerá una interesante charla informativa sobre la visita a Machupicchu.`,
-        includes: '• Guía profesional bilingüe\n• Entrada a Rainbow Mountain\n• Transporte completo\n• Desayuno y almuerzo\n• Bastones de trekking\n• Kit de primeros auxilios',
-        excludes: '• Propinas\n• Bebidas alcohólicas\n• Seguro de viaje personal\n• Gastos personales',
-        requirements: '• Buen estado físico\n• Aclimatación previa de 2 días en Cusco\n• Ropa abrigada y protector solar',
-      });
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
+    if (id) {
+      fetchTour();
     }
-  };
+  }, [id]);
 
   const handleAddToCart = () => {
     if (!selectedDate) {
@@ -87,18 +60,37 @@ A las 7:00 PM, nuestro guía ofrecerá una interesante charla informativa sobre 
     window.location.href = '/cart';
   };
 
+  // 👇 Función para obtener array de imágenes (maneja tanto objetos como strings)
+  const getImageUrls = () => {
+    if (!tour) return [];
+    
+    // Si tour.images es array de objetos con image_url
+    if (tour.images && Array.isArray(tour.images) && tour.images.length > 0) {
+      if (typeof tour.images[0] === 'object') {
+        return tour.images.map(img => img.image_url);
+      }
+      return tour.images;
+    }
+    
+    // Si solo tiene featured_image
+    return tour.featured_image ? [tour.featured_image] : [];
+  };
+
+  const imageUrls = getImageUrls();
+
   const nextImage = () => {
     setCurrentImageIndex((prev) => 
-      prev === tour.images.length - 1 ? 0 : prev + 1
+      prev === imageUrls.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => 
-      prev === 0 ? tour.images.length - 1 : prev - 1
+      prev === 0 ? imageUrls.length - 1 : prev - 1
     );
   };
 
+  // 👇 ESTADOS DE CARGA Y ERROR
   if (loading) {
     return (
       <div className="loading-container">
@@ -108,11 +100,29 @@ A las 7:00 PM, nuestro guía ofrecerá una interesante charla informativa sobre 
     );
   }
 
-  if (!tour) {
-    return <div className="error-container">Tour no encontrado</div>;
+  if (error) {
+    return (
+      <div className="error-container">
+        <h2>{error}</h2>
+        <Link to="/tours" className="btn-primary mt-4">
+          Volver a Tours
+        </Link>
+      </div>
+    );
   }
 
-  const totalPrice = tour.price * numberOfPeople;
+  if (!tour) {
+    return (
+      <div className="error-container">
+        <h2>Tour no encontrado</h2>
+        <Link to="/tours" className="btn-primary mt-4">
+          Volver a Tours
+        </Link>
+      </div>
+    );
+  }
+
+  const totalPrice = (tour.discount_price || tour.price) * numberOfPeople;
 
   return (
     <div className="tour-detail-page">
@@ -136,18 +146,22 @@ A las 7:00 PM, nuestro guía ofrecerá una interesante charla informativa sobre 
             <div className="image-gallery">
               <div className="main-image-container">
                 <img 
-                  src={tour.images[currentImageIndex]} 
+                  src={imageUrls[currentImageIndex] || 'https://via.placeholder.com/800x600'} 
                   alt={tour.title}
                   className="main-image"
                 />
                 
-                {/* Botones de navegación */}
-                <button className="gallery-nav prev" onClick={prevImage}>
-                  <ChevronLeft />
-                </button>
-                <button className="gallery-nav next" onClick={nextImage}>
-                  <ChevronRight />
-                </button>
+                {/* Botones de navegación - solo si hay más de 1 imagen */}
+                {imageUrls.length > 1 && (
+                  <>
+                    <button className="gallery-nav prev" onClick={prevImage}>
+                      <ChevronLeft />
+                    </button>
+                    <button className="gallery-nav next" onClick={nextImage}>
+                      <ChevronRight />
+                    </button>
+                  </>
+                )}
 
                 {/* Botones de acción */}
                 <div className="image-actions">
@@ -165,21 +179,25 @@ A las 7:00 PM, nuestro guía ofrecerá una interesante charla informativa sobre 
                 </div>
               </div>
 
-              {/* Miniaturas */}
-              <div className="thumbnails">
-                {tour.images.map((img, index) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt={`Vista ${index + 1}`}
-                    className={`thumbnail ${index === currentImageIndex ? 'active' : ''}`}
-                    onClick={() => setCurrentImageIndex(index)}
-                  />
-                ))}
-                <div className="thumbnail view-more">
-                  <span>Ver más</span>
+              {/* Miniaturas - solo si hay más de 1 imagen */}
+              {imageUrls.length > 1 && (
+                <div className="thumbnails">
+                  {imageUrls.slice(0, 4).map((img, index) => (
+                    <img
+                      key={index}
+                      src={img}
+                      alt={`Vista ${index + 1}`}
+                      className={`thumbnail ${index === currentImageIndex ? 'active' : ''}`}
+                      onClick={() => setCurrentImageIndex(index)}
+                    />
+                  ))}
+                  {imageUrls.length > 4 && (
+                    <div className="thumbnail view-more">
+                      <span>+{imageUrls.length - 4}</span>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Características Rápidas */}
@@ -189,32 +207,38 @@ A las 7:00 PM, nuestro guía ofrecerá una interesante charla informativa sobre 
                 <div>
                   <div className="feature-label">Duración:</div>
                   <div className="feature-value">
-                    {tour.duration_days} días {tour.duration_hours} noches
+                    {tour.duration_days > 0
+                      ? `${tour.duration_days} ${tour.duration_days === 1 ? 'día' : 'días'}`
+                      : `${tour.duration_hours} horas`}
                   </div>
-                </div>
-              </div>
-
-              <div className="feature-item">
-                <Mountain className="feature-icon" />
-                <div>
-                  <div className="feature-label">Altura Máxima:</div>
-                  <div className="feature-value">5000 msnm</div>
                 </div>
               </div>
 
               <div className="feature-item">
                 <MapPin className="feature-icon" />
                 <div>
-                  <div className="feature-label">Tipo De Tours:</div>
-                  <div className="feature-value">{tour.category.name}</div>
+                  <div className="feature-label">Ubicación:</div>
+                  <div className="feature-value">
+                    {tour.location_city}, {tour.location_country}
+                  </div>
+                </div>
+              </div>
+
+              <div className="feature-item">
+                <Users className="feature-icon" />
+                <div>
+                  <div className="feature-label">Grupo máximo:</div>
+                  <div className="feature-value">{tour.max_people} personas</div>
                 </div>
               </div>
 
               <div className="feature-item">
                 <Shield className="feature-icon" />
                 <div>
-                  <div className="feature-label">Dificultad</div>
-                  <div className="feature-value">Moderado</div>
+                  <div className="feature-label">Dificultad:</div>
+                  <div className="feature-value capitalize">
+                    {tour.difficulty_level || 'Moderado'}
+                  </div>
                 </div>
               </div>
             </div>
@@ -247,33 +271,24 @@ A las 7:00 PM, nuestro guía ofrecerá una interesante charla informativa sobre 
                   NO INCLUYE
                 </button>
                 <button 
-                  className={`tab-btn ${activeTab === 'faqs' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('faqs')}
+                  className={`tab-btn ${activeTab === 'requirements' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('requirements')}
                 >
-                  FAQs
-                </button>
-                <button className="tab-btn">
-                  Descargar Itinerario
+                  REQUISITOS
                 </button>
               </div>
 
               <div className="tab-content">
                 {activeTab === 'description' && (
                   <div className="content-section">
-                    <p>{tour.description}</p>
-                    <p className="mt-4">{tour.itinerary}</p>
+                    <p className="whitespace-pre-line">{tour.description}</p>
                   </div>
                 )}
 
                 {activeTab === 'itinerary' && (
                   <div className="content-section">
-                    <div className="itinerary-day">
-                      <h3>▸ Día 1: VALLE SACRADO Y CONEXION</h3>
-                      <p>{tour.description}</p>
-                    </div>
-                    <div className="itinerary-day">
-                      <h3>▸ Día 2: VISITA A MACHUPICCHU</h3>
-                      <p>A las 7:00 PM, nuestro guía ofrecerá una interesante charla informativa sobre la visita a Machupicchu. Finalmente, disfrutarás de tiempo libre para explorar la majestuosidad de la Ciudadela Inca al día siguiente.</p>
+                    <div className="whitespace-pre-line">
+                      {tour.itinerary || 'Itinerario no disponible'}
                     </div>
                   </div>
                 )}
@@ -281,12 +296,12 @@ A las 7:00 PM, nuestro guía ofrecerá una interesante charla informativa sobre 
                 {activeTab === 'includes' && (
                   <div className="content-section">
                     <ul className="check-list">
-                      {tour.includes.split('\n').map((item, i) => (
+                      {tour.includes ? tour.includes.split('\n').map((item, i) => (
                         <li key={i}>
                           <Check className="check-icon" />
                           {item.replace('•', '').trim()}
                         </li>
-                      ))}
+                      )) : <li>No hay información disponible</li>}
                     </ul>
                   </div>
                 )}
@@ -294,25 +309,20 @@ A las 7:00 PM, nuestro guía ofrecerá una interesante charla informativa sobre 
                 {activeTab === 'not-includes' && (
                   <div className="content-section">
                     <ul className="check-list exclude">
-                      {tour.excludes.split('\n').map((item, i) => (
+                      {tour.excludes ? tour.excludes.split('\n').map((item, i) => (
                         <li key={i}>
                           <X className="x-icon" />
                           {item.replace('•', '').trim()}
                         </li>
-                      ))}
+                      )) : <li>No hay información disponible</li>}
                     </ul>
                   </div>
                 )}
 
-                {activeTab === 'faqs' && (
+                {activeTab === 'requirements' && (
                   <div className="content-section">
-                    <div className="faq-item">
-                      <h4>¿Qué debo llevar?</h4>
-                      <p>Ropa abrigada, protector solar, agua, cámara fotográfica.</p>
-                    </div>
-                    <div className="faq-item">
-                      <h4>¿Es apto para niños?</h4>
-                      <p>Sí, a partir de 8 años con supervisión.</p>
+                    <div className="whitespace-pre-line">
+                      {tour.requirements || 'No hay requisitos específicos'}
                     </div>
                   </div>
                 )}
@@ -325,60 +335,21 @@ A las 7:00 PM, nuestro guía ofrecerá una interesante charla informativa sobre 
               
               <div className="reviews-summary">
                 <div className="rating-big">
-                  <div className="rating-number">4,9</div>
+                  <div className="rating-number">{tour.rating || 0}</div>
                   <div className="stars">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} fill="var(--color-primary)" color="var(--color-primary)" size={20} />
+                      <Star 
+                        key={i} 
+                        fill={i < Math.floor(tour.rating) ? "var(--color-primary)" : "none"} 
+                        color="var(--color-primary)" 
+                        size={20} 
+                      />
                     ))}
                   </div>
-                  <div className="reviews-count">Según 2752 opiniones</div>
-                </div>
-
-                <div className="rating-bars">
-                  {[5, 4, 3, 2, 1].map((stars) => (
-                    <div key={stars} className="rating-bar-item">
-                      <span>{stars} estrellas</span>
-                      <div className="bar">
-                        <div className="bar-fill" style={{ width: `${stars * 18}%` }}></div>
-                      </div>
-                      <span className="count">{2595 - (stars * 100)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Lista de reseñas */}
-              <div className="reviews-list">
-                {[1, 2, 3].map((_, i) => (
-                  <div key={i} className="review-card">
-                    <div className="review-header">
-                      <div className="stars-small">
-                        {[...Array(5)].map((_, j) => (
-                          <Star key={j} fill="var(--color-primary)" color="var(--color-primary)" size={16} />
-                        ))}
-                      </div>
-                      <span className="review-date">5 set 2024</span>
-                    </div>
-                    <h4>Me encantó la...</h4>
-                    <p className="review-text">
-                      Me encantó la experiencia, muy difícil subir a la montaña, pero siempre mi guía Wally estuvo al pendiente y logré llegar a los miradores.
-                    </p>
-                    <div className="review-actions">
-                      <button className="review-btn">👍</button>
-                      <button className="review-btn">👎</button>
-                    </div>
+                  <div className="reviews-count">
+                    Según {tour.total_reviews || 0} opiniones
                   </div>
-                ))}
-              </div>
-
-              <button className="btn-outline">Mostrar 10 opiniones más</button>
-            </div>
-
-            {/* Otras Sugerencias */}
-            <div className="related-tours">
-              <h2>Otras sugerencias</h2>
-              <div className="related-grid">
-                {/* Aquí irían los tours relacionados */}
+                </div>
               </div>
             </div>
           </div>
@@ -387,8 +358,13 @@ A las 7:00 PM, nuestro guía ofrecerá una interesante charla informativa sobre 
           <div className="booking-sidebar">
             <div className="booking-card">
               <div className="price-section">
-                <div className="price-label">TOTAL ESTIMADO</div>
-                <div className="price-amount">S/ {totalPrice}</div>
+                <div className="price-label">PRECIO POR PERSONA</div>
+                <div className="price-amount">
+                  S/ {tour.discount_price || tour.price}
+                  {tour.discount_price && (
+                    <span className="original-price">S/ {tour.price}</span>
+                  )}
+                </div>
                 <div className="price-note">impuestos incluidos</div>
               </div>
 
@@ -420,29 +396,52 @@ A las 7:00 PM, nuestro guía ofrecerá una interesante charla informativa sobre 
                 </div>
               </div>
 
-              <button className="btn-primary w-full" onClick={() => alert('Próximamente: Verificar disponibilidad')}>
-                Comprobar disponibilidad
-              </button>
+              <div className="price-section mt-4">
+                <div className="price-label">TOTAL</div>
+                <div className="price-amount">S/ {totalPrice.toFixed(2)}</div>
+              </div>
 
               <div className="booking-info">
                 <p>
                   <Check size={16} className="text-primary" />
-                  Quedan <strong>4 cupos</strong> para el <strong>15 de agosto</strong> en Lima
+                  Pago 100% seguro
                 </p>
                 <p>
                   <Check size={16} className="text-primary" />
-                  Pago 100% seguro: tarjeta, Yape o transferencia
+                  Cancelación flexible
                 </p>
               </div>
 
               <button className="btn-secondary w-full mb-2" onClick={handleAddToCart}>
-                Agregar a tus paquetes
+                Agregar al carrito
               </button>
 
               <button className="btn-primary w-full" onClick={handleReserveNow}>
                 Reservar ahora
               </button>
             </div>
+
+            {/* Info de la Agencia */}
+            {tour.agency && (
+              <div className="agency-card mt-4">
+                <h3>Operado por</h3>
+                <div className="agency-info">
+                  {tour.agency.logo && (
+                    <img src={tour.agency.logo} alt={tour.agency.business_name} />
+                  )}
+                  <div>
+                    <h4>{tour.agency.business_name}</h4>
+                    <div className="agency-rating">
+                      <Star fill="var(--color-primary)" size={16} />
+                      <span>{tour.agency.rating}</span>
+                      <span className="text-gray-500">
+                        ({tour.agency.total_reviews} reseñas)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
