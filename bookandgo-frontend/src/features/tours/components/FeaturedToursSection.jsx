@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
+
 import TourCard from './TourCard';
 import api from '../../../shared/utils/api';
 

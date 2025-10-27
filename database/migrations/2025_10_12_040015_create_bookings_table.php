@@ -14,12 +14,16 @@ return new class extends Migration
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
             $table->string('booking_number')->unique();
+            $table->string('qr_code')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('tour_id')->constrained()->onDelete('cascade');
             $table->foreignId('agency_id')->constrained()->onDelete('cascade');
+            $table->string('agency_whatsapp', 20)->nullable();
             
             $table->date('booking_date');
             $table->time('booking_time')->nullable();
+            $table->text('meeting_point')->nullable();
+            $table->text('agency_instructions')->nullable();
             $table->integer('number_of_people');
             
             $table->decimal('price_per_person', 10, 2);
@@ -41,9 +45,15 @@ return new class extends Migration
                 'cancelled',
                 'refunded'
             ])->default('pending');
+
+            $table->json('timeline')->nullable();
             
             $table->timestamp('confirmed_at')->nullable();
+            $table->timestamp('checked_in_at')->nullable();
+            $table->boolean('reminder_sent')->default(false);
+            $table->timestamp('reminder_sent_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
             $table->text('cancellation_reason')->nullable();
             
             $table->timestamps();

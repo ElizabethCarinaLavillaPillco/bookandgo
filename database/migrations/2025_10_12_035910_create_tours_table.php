@@ -22,6 +22,9 @@ return new class extends Migration
             $table->text('includes')->nullable();
             $table->text('excludes')->nullable();
             $table->text('requirements')->nullable();
+            $table->text('cancellation_policy')->nullable();
+            $table->enum('refund_policy', ['full', 'partial', 'none'])->default('partial');
+            $table->integer('cancellation_hours')->default(24);
             $table->decimal('price', 10, 2);
             $table->decimal('discount_price', 10, 2)->nullable();
             $table->integer('duration_days')->default(1);
@@ -40,6 +43,13 @@ return new class extends Migration
             $table->integer('total_bookings')->default(0);
             $table->boolean('is_featured')->default(false);
             $table->boolean('is_active')->default(true);
+            $table->boolean('is_published')->default(false);
+            $table->boolean('admin_verified')->default(false);
+            $table->timestamp('admin_verified_at')->nullable();
+            $table->text('rejection_reason')->nullable();
+            $table->timestamp('published_at')->nullable();
+            $table->tinyInteger('creation_step')->default(1);
+            $table->json('quality_checklist')->nullable();
             $table->timestamp('available_from')->nullable();
             $table->timestamp('available_to')->nullable();
             $table->json('available_days')->nullable();

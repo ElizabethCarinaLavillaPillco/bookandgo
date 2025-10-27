@@ -14,12 +14,17 @@ class Tour extends Model
     protected $fillable = [
         'agency_id', 'category_id', 'title', 'slug', 'description',
         'itinerary', 'includes', 'excludes', 'requirements',
+        'cancellation_policy', 'refund_policy', 'cancellation_hours',
         'price', 'discount_price', 'duration_days', 'duration_hours',
         'max_people', 'min_people', 'difficulty_level',
         'location_city', 'location_region', 'location_country',
         'latitude', 'longitude', 'featured_image',
         'rating', 'total_reviews', 'total_bookings',
-        'is_featured', 'is_active', 'available_from', 'available_to',
+        'is_featured', 'is_active', 
+        'is_published', 'published_at', 'creation_step',
+        'admin_verified', 'admin_verified_at',
+        'quality_checklist',
+        'available_from', 'available_to',
         'available_days',
     ];
 
@@ -34,6 +39,9 @@ class Tour extends Model
         'available_from' => 'datetime',
         'available_to' => 'datetime',
         'available_days' => 'array',
+        'quality_checklist' => 'array',
+        'cancellation_policy' => 'string',
+        
     ];
 
     protected static function boot()
