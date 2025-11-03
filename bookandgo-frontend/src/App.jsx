@@ -1,3 +1,5 @@
+// src/App.jsx
+
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
@@ -15,7 +17,12 @@ import RegisterPage from './features/auth/pages/RegisterPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
 import CartPage from './features/booking/pages/CartPage';
 
-// Create a client
+// Agency Pages
+import AgencyDashboard from './features/agency/pages/AgencyDashboard';
+import CreateTourPage from './features/agency/pages/CreateTourPage';
+import EditTourPage from './features/agency/pages/EditTourPage';
+import MyToursPage from './features/agency/pages/MyToursPage';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -25,45 +32,84 @@ const queryClient = new QueryClient({
   },
 });
 
-// Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
+// Protected Route
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+  const { isAuthenticated, user } = useAuthStore();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+    return <Navigate to="/" replace />;
+  }
+
   return children;
 };
 
-
 function App() {
+  const { checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<MainLayout />}>
+            {/* Public Routes */}
             <Route index element={<HomePage />} />
             <Route path="tours" element={<ToursPage />} />
-            <Route path="tours/:id" element={<TourDetailPage />} /> {/* 👈 AGREGA ESTA LÍNEA */}
+            <Route path="tours/:id" element={<TourDetailPage />} />
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />
-            <Route path="profile" element={<ProfilePage />} />
             <Route path="cart" element={<CartPage />} />
-            <Route path="become-agency" element={<RegisterPage />} />
-
-            {/* Rutas protegidas */}
+            
+            {/* Customer Routes */}
             <Route 
               path="profile" 
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['customer', 'agency', 'admin']}>
                   <ProfilePage />
                 </ProtectedRoute>
               } 
             />
-            
-            {/* Rutas protegidas se agregarán después */}
-            {/* <Route path="profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} /> */}
+
+            {/* Agency Routes */}
+            <Route 
+              path="agency/dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['agency']}>
+                  <AgencyDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="agency/tours" 
+              element={
+                <ProtectedRoute allowedRoles={['agency']}>
+                  <MyToursPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="agency/tours/create" 
+              element={
+                <ProtectedRoute allowedRoles={['agency']}>
+                  <CreateTourPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="agency/tours/:id/edit" 
+              element={
+                <ProtectedRoute allowedRoles={['agency']}>
+                  <EditTourPage />
+                </ProtectedRoute>
+              } 
+            />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -1,136 +1,128 @@
 <?php
+// app/Http/Controllers/Api/AgencyController.php
 
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Agency;
+use App\Models\Tour;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AgencyController extends Controller
 {
-    public function index(Request $request)
+    // Dashboard stats
+    public function statistics(Request $request)
     {
-        $agencies = Agency::with('user')
-            ->where('is_verified', true)
-            ->when($request->has('search'), function($query) use ($request) {
-                $search = $request->search;
-                $query->where('business_name', 'like', "%{$search}%")
-                      ->orWhere('city', 'like', "%{$search}%");
-            })
-            ->withCount('tours')
-            ->orderBy('rating', 'desc')
-            ->paginate(12);
+        $agencyId = $request->user()->agency->id;
 
-        return response()->json($agencies);
+        $stats = [
+            'total_tours' => Tour::where('agency_id', $agencyId)->count(),
+            'active_bookings' => Booking::where('agency_id', $agencyId)
+                ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
+                ->count(),
+            'total_revenue' => Booking::where('agency_id', $agencyId)
+                ->where('status', 'completed')
+                ->sum('total_price'),
+            'total_reviews' => DB::table('reviews')
+                ->where('agency_id', $agencyId)
+                ->count(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'stats' => $stats,
+        ]);
     }
 
+    // Listar tours de la agencia
+    public function tours(Request $request)
+    {
+        $query = Tour::where('agency_id', $request->user()->agency->id)
+            ->with(['category', 'images']);
+
+        if ($request->has('limit')) {
+            $tours = $query->limit($request->limit)->get();
+            return response()->json([
+                'success' => true,
+                'data' => $tours,
+            ]);
+        }
+
+        $tours = $query->paginate($request->per_page ?? 15);
+
+        return response()->json($tours);
+    }
+
+    // Dashboard principal
+    public function dashboard(Request $request)
+    {
+        $agencyId = $request->user()->agency->id;
+
+        $data = [
+            'stats' => [
+                'total_tours' => Tour::where('agency_id', $agencyId)->count(),
+                'active_bookings' => Booking::where('agency_id', $agencyId)
+                    ->whereIn('status', ['pending', 'confirmed'])
+                    ->count(),
+                'total_revenue' => Booking::where('agency_id', $agencyId)
+                    ->where('status', 'completed')
+                    ->sum('total_price'),
+            ],
+            'recent_tours' => Tour::where('agency_id', $agencyId)
+                ->latest()
+                ->limit(5)
+                ->get(),
+            'recent_bookings' => Booking::where('agency_id', $agencyId)
+                ->with(['user', 'tour'])
+                ->latest()
+                ->limit(5)
+                ->get(),
+        ];
+
+        return response()->json($data);
+    }
+
+    // Ver agencia pública
     public function show($id)
     {
-        $agency = Agency::with([
-            'user',
-            'tours' => function($query) {
-                $query->active()->with(['category', 'images'])->latest();
-            },
-            'reviews' => function($query) {
-                $query->approved()->with('user')->latest()->limit(10);
-            }
-        ])->findOrFail($id);
+        $agency = \App\Models\Agency::with(['user', 'tours' => function ($query) {
+            $query->where('is_published', true)->where('is_active', true);
+        }])->findOrFail($id);
 
         return response()->json($agency);
     }
 
-    public function dashboard(Request $request)
+    // Listar agencias (público)
+    public function index(Request $request)
     {
-        $user = $request->user();
-        
-        if (!$user->isAgency() || !$user->agency) {
-            return response()->json([
-                'message' => 'No tienes acceso a este recurso'
-            ], 403);
-        }
+        $agencies = \App\Models\Agency::with('user')
+            ->where('is_verified', true)
+            ->paginate($request->per_page ?? 12);
 
-        $agency = $user->agency;
-
-        // Estadísticas
-        $stats = [
-            'total_tours' => $agency->tours()->count(),
-            'active_tours' => $agency->tours()->active()->count(),
-            'total_bookings' => $agency->bookings()->count(),
-            'pending_bookings' => $agency->bookings()->pending()->count(),
-            'total_revenue' => $agency->bookings()
-                ->where('status', 'completed')
-                ->sum('total_price'),
-            'this_month_revenue' => $agency->bookings()
-                ->where('status', 'completed')
-                ->whereMonth('created_at', now()->month)
-                ->sum('total_price'),
-            'average_rating' => round($agency->rating, 2),
-            'total_reviews' => $agency->total_reviews,
-        ];
-
-        // Reservas recientes
-        $recentBookings = $agency->bookings()
-            ->with(['tour', 'user'])
-            ->latest()
-            ->limit(10)
-            ->get();
-
-        // Tours más vendidos
-        $topTours = $agency->tours()
-            ->orderBy('total_bookings', 'desc')
-            ->with('images')
-            ->limit(5)
-            ->get();
-
-        // Ingresos por mes (últimos 6 meses)
-        $monthlyRevenue = $agency->bookings()
-            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(total_price) as revenue')
-            ->where('status', 'completed')
-            ->where('created_at', '>=', now()->subMonths(6))
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
-
-        return response()->json([
-            'stats' => $stats,
-            'recent_bookings' => $recentBookings,
-            'top_tours' => $topTours,
-            'monthly_revenue' => $monthlyRevenue,
-        ]);
+        return response()->json($agencies);
     }
 
+    // Actualizar perfil de agencia
     public function update(Request $request)
     {
-        $user = $request->user();
-        
-        if (!$user->isAgency() || !$user->agency) {
-            return response()->json([
-                'message' => 'No tienes acceso a este recurso'
-            ], 403);
-        }
+        $agency = $request->user()->agency;
 
         $validated = $request->validate([
             'business_name' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'phone' => 'sometimes|string|max:20',
-            'website' => 'nullable|url|max:255',
-            'address' => 'sometimes|string|max:255',
-            'city' => 'sometimes|string|max:100',
-            'logo' => 'nullable|image|max:2048',
+            'website' => 'sometimes|url',
+            'address' => 'sometimes|string',
+            'city' => 'sometimes|string',
         ]);
 
-        if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('agencies', 'public');
-            $validated['logo'] = $path;
-        }
-
-        $user->agency->update($validated);
+        $agency->update($validated);
 
         return response()->json([
-            'message' => 'Perfil de agencia actualizado exitosamente',
-            'agency' => $user->agency
+            'success' => true,
+            'message' => 'Perfil actualizado exitosamente',
+            'data' => $agency,
         ]);
     }
 }
