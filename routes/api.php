@@ -17,18 +17,27 @@ use App\Http\Controllers\Api\SystemSettingsController;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes - BOOK&GO (ACTUALIZADO)
+| API Routes - BOOK&GO
 |--------------------------------------------------------------------------
 */
 
 Route::prefix('v1')->group(function () {
     
-    // ===== RUTAS PÚBLICAS (sin autenticación) =====
-    Route::group([], function () {
-        // Autenticación
+    // ===== AUTENTICACIÓN (sin auth:sanctum) =====
+    Route::prefix('auth')->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/login', [AuthController::class, 'login']);
         
+        // Rutas protegidas de auth
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('/logout', [AuthController::class, 'logout']);
+            Route::get('/me', [AuthController::class, 'me']);
+            Route::put('/profile', [AuthController::class, 'updateProfile']);
+        });
+    });
+    
+    // ===== RUTAS PÚBLICAS (sin autenticación) =====
+    Route::group([], function () {
         // Tours (listado público)
         Route::get('/tours', [TourController::class, 'index']);
         Route::get('/tours/featured', [TourController::class, 'featured']);
@@ -55,11 +64,6 @@ Route::prefix('v1')->group(function () {
 
     // ===== RUTAS PROTEGIDAS (requieren autenticación) =====
     Route::middleware(['auth:sanctum'])->group(function () {
-        
-        // --- Autenticación ---
-        Route::post('/logout', [AuthController::class, 'logout']);
-        Route::get('/me', [AuthController::class, 'me']);
-        Route::put('/profile', [AuthController::class, 'updateProfile']);
         
         // --- CLIENTE: Favoritos ---
         Route::middleware(['role:customer'])->group(function () {

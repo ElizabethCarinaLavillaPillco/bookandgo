@@ -8,22 +8,37 @@ const api = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
+  withCredentials: false,
 });
 
 // Interceptor para agregar token si existe
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth-storage')
-      ? JSON.parse(localStorage.getItem('auth-storage')).state?.token
-      : null;
-
+    const token = localStorage.getItem('token');
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
+    
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor para manejar errores de autenticación
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token inválido o expirado
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    
+    return Promise.reject(error);
+  }
 );
 
 // ===== EXPORTS NOMBRADOS =====
@@ -35,6 +50,16 @@ export const toursApi = {
   featured: () => api.get('/tours/featured'),
   related: (id) => api.get(`/tours/${id}/related`),
 };
+
+// Auth API
+export const authApi = {
+  login: (credentials) => api.post('/auth/login', credentials),
+  register: (userData) => api.post('/auth/register', userData),
+  logout: () => api.post('/auth/logout'),
+  me: () => api.get('/auth/me'),
+  updateProfile: (data) => api.put('/auth/profile', data),
+};
+
 
 // Documentos
 export const bookingDocumentsApi = {

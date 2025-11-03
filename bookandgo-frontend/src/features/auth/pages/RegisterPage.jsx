@@ -1,13 +1,16 @@
+// src/features/auth/pages/RegisterPage.jsx
+
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { UserPlus, Mail, Lock, User, Phone, Eye, EyeOff, Loader2, Calendar } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, Phone, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import useAuthStore from '../../../store/authStore';
 
 const RegisterPage = () => {
   const [searchParams] = useSearchParams();
   const isAgency = searchParams.get('type') === 'agency';
   const navigate = useNavigate();
 
-  const [step, setStep] = useState(1); // 1: Datos, 2: Términos
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -24,7 +27,6 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -36,28 +38,44 @@ const RegisterPage = () => {
   const validateStep1 = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) newErrors.name = 'El nombre es requerido';
+    if (!formData.name.trim()) {
+      newErrors.name = 'El nombre es requerido';
+    }
+    
     if (!formData.email.trim()) {
       newErrors.email = 'El correo es requerido';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Ingresa un correo válido';
     }
+    
     if (!formData.password) {
       newErrors.password = 'La contraseña es requerida';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Mínimo 8 caracteres';
     }
+    
     if (formData.password !== formData.password_confirmation) {
       newErrors.password_confirmation = 'Las contraseñas no coinciden';
     }
-    if (!formData.phone.trim()) newErrors.phone = 'El teléfono es requerido';
+    
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'El teléfono es requerido';
+    }
 
     // Validaciones adicionales para agencias
     if (isAgency) {
-      if (!formData.business_name.trim()) newErrors.business_name = 'Razón social requerida';
-      if (!formData.ruc_tax_id.trim()) newErrors.ruc_tax_id = 'RUC requerido';
-      if (!formData.address.trim()) newErrors.address = 'Dirección requerida';
-      if (!formData.city.trim()) newErrors.city = 'Ciudad requerida';
+      if (!formData.business_name.trim()) {
+        newErrors.business_name = 'Razón social requerida';
+      }
+      if (!formData.ruc_tax_id.trim()) {
+        newErrors.ruc_tax_id = 'RUC requerido';
+      }
+      if (!formData.address.trim()) {
+        newErrors.address = 'Dirección requerida';
+      }
+      if (!formData.city.trim()) {
+        newErrors.city = 'Ciudad requerida';
+      }
     }
 
     setErrors(newErrors);
@@ -72,7 +90,13 @@ const RegisterPage = () => {
   };
 
   if (step === 2) {
-    return <TermsAndConditionsStep formData={formData} onBack={() => setStep(1)} />;
+    return (
+      <TermsAndConditionsStep 
+        formData={formData} 
+        onBack={() => setStep(1)} 
+        isAgency={isAgency}
+      />
+    );
   }
 
   return (
@@ -84,7 +108,7 @@ const RegisterPage = () => {
             <UserPlus className="w-10 h-10 text-gray-900" />
           </div>
           <h2 className="text-3xl font-black text-gray-900 mb-2">
-            {isAgency ? 'Regístrate como Proveedor' : 'Terminar de registrarme'}
+            {isAgency ? 'Regístrate como Proveedor' : 'Crear cuenta'}
           </h2>
           <p className="text-gray-600">
             {isAgency
@@ -111,13 +135,13 @@ const RegisterPage = () => {
                   className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:outline-none transition-all ${
                     errors.name ? 'border-red-500' : 'border-gray-200 focus:border-primary'
                   }`}
-                  placeholder="Ingresa tu nombre completo"
+                  placeholder="Juan Pérez"
                 />
               </div>
               {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
             </div>
 
-            {/* Correo */}
+            {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Correo electrónico
@@ -319,22 +343,28 @@ const RegisterPage = () => {
   );
 };
 
-// Componente de Términos y Condiciones
-const TermsAndConditionsStep = ({ formData, onBack }) => {
+// 👇 COMPONENTE DE TÉRMINOS CORREGIDO
+const TermsAndConditionsStep = ({ formData, onBack, isAgency }) => {
   const [accepted, setAccepted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { register, loading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!accepted) return;
+    
+    if (!accepted) {
+      alert('Debes aceptar los términos y condiciones');
+      return;
+    }
 
-    setLoading(true);
-    // Aquí iría la lógica de registro con el backend
-    // Por ahora simulamos un registro exitoso
-    setTimeout(() => {
-      navigate('/login');
-    }, 2000);
+    clearError();
+
+    // 👇 ENVIAR DATOS AL BACKEND
+    const result = await register(formData);
+
+    if (result.success) {
+      navigate('/');
+    }
   };
 
   return (
@@ -343,66 +373,38 @@ const TermsAndConditionsStep = ({ formData, onBack }) => {
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
           <h2 className="text-3xl font-black text-gray-900 mb-2">
-            Nuestro compromiso de la comunidad
+            Términos y Condiciones
           </h2>
+          <p className="text-gray-600">
+            Revisa y acepta nuestros términos para continuar
+          </p>
         </div>
 
         {/* Contenido */}
         <div className="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
-          <div className="mb-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Book&Go es una comunidad a la que todos pueden pertenecer
-            </h3>
-            <p className="text-gray-600 leading-relaxed">
-              Para garantizar esto, te pedimos que te comprometas con lo siguiente:
-            </p>
+          {/* Error */}
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6 animate-fade-in flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+              <p className="text-red-700 text-sm font-medium">{error}</p>
+            </div>
+          )}
 
-            <div className="mt-6 space-y-4">
-              <p className="text-gray-700">
-                Acepto tratar a todos en la comunidad de Book&Go con respeto y sin prejuicios, sin importar la raza, religión, nacionalidad, etnia, discapacidad, sexo, identidad de género, orientación sexual o edad.
-              </p>
+          {/* Términos (simplificado) */}
+          <div className="border border-gray-200 rounded-xl p-6 max-h-64 overflow-y-auto mb-6">
+            <div className="space-y-4 text-sm text-gray-600">
+              <p className="font-semibold text-gray-900">1. Aceptación de términos</p>
+              <p>Al crear una cuenta en Book&Go, aceptas nuestros términos y condiciones.</p>
+
+              <p className="font-semibold text-gray-900">2. Uso del servicio</p>
+              <p>Debes utilizar nuestros servicios de manera responsable y legal.</p>
+
+              <p className="font-semibold text-gray-900">3. Privacidad</p>
+              <p>Tus datos serán protegidos según nuestra política de privacidad.</p>
             </div>
           </div>
 
-          {/* Términos y condiciones */}
-          <div className="border-t border-gray-200 pt-6 mb-6">
-            <h4 className="font-bold text-gray-900 mb-3">Términos legales</h4>
-            <div className="bg-gray-50 rounded-xl p-6 max-h-64 overflow-y-auto custom-scrollbar">
-              <div className="space-y-4 text-sm text-gray-600">
-                <p className="font-semibold text-gray-900">1. Aceptación de términos</p>
-                <p>
-                  Al crear una cuenta en Book&Go, aceptas cumplir con nuestros términos y condiciones, así como nuestras políticas de privacidad.
-                </p>
-
-                <p className="font-semibold text-gray-900">2. Uso del servicio</p>
-                <p>
-                  Te comprometes a utilizar nuestros servicios de manera responsable y legal. No está permitido publicar contenido ofensivo, engañoso o que viole derechos de terceros.
-                </p>
-
-                <p className="font-semibold text-gray-900">3. Política de cancelación</p>
-                <p>
-                  Las reservas pueden cancelarse según las políticas específicas de cada tour. Los reembolsos están sujetos a las condiciones establecidas por cada agencia.
-                </p>
-
-                <p className="font-semibold text-gray-900">4. Privacidad de datos</p>
-                <p>
-                  Tus datos personales serán tratados conforme a nuestra política de privacidad. No compartiremos tu información con terceros sin tu consentimiento.
-                </p>
-
-                <p className="font-semibold text-gray-900">5. Responsabilidad</p>
-                <p>
-                  Book&Go actúa como intermediario entre turistas y agencias. Las agencias son responsables de la calidad y cumplimiento de los servicios ofrecidos.
-                </p>
-
-                <p className="font-semibold text-gray-900">6. Modificaciones</p>
-                <p>
-                  Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios serán notificados a través de nuestros canales oficiales.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Checkbox de aceptación */}
+          {/* Checkbox */}
           <label className="flex items-start gap-3 p-4 rounded-xl border-2 border-gray-200 hover:border-primary cursor-pointer transition-all mb-6">
             <input
               type="checkbox"
@@ -411,15 +413,7 @@ const TermsAndConditionsStep = ({ formData, onBack }) => {
               className="w-5 h-5 mt-0.5 text-primary focus:ring-primary rounded"
             />
             <span className="text-sm text-gray-700">
-              Acepto los{' '}
-              <Link to="/terms" className="text-primary hover:underline font-semibold">
-                términos y condiciones
-              </Link>
-              , la{' '}
-              <Link to="/privacy" className="text-primary hover:underline font-semibold">
-                política de privacidad
-              </Link>{' '}
-              y el acuerdo de la comunidad de Book&Go.
+              Acepto los términos y condiciones, la política de privacidad y el acuerdo de la comunidad de Book&Go.
             </span>
           </label>
 
@@ -430,7 +424,7 @@ const TermsAndConditionsStep = ({ formData, onBack }) => {
               onClick={onBack}
               className="flex-1 border-2 border-gray-300 text-gray-700 font-bold py-4 rounded-xl hover:bg-gray-50 transition-all"
             >
-              Rechazar
+              Atrás
             </button>
             <button
               onClick={handleSubmit}
@@ -443,15 +437,10 @@ const TermsAndConditionsStep = ({ formData, onBack }) => {
                   Creando cuenta...
                 </>
               ) : (
-                'Aceptar y continuar'
+                'Crear cuenta'
               )}
             </button>
           </div>
-
-          {/* Nota legal */}
-          <p className="mt-6 text-xs text-gray-500 text-center">
-            Book&Go se toma muy en serio el incumplimiento de estos términos, y estas violaciones pueden dar lugar a la suspensión o eliminación de tu cuenta si verificamos su validez.
-          </p>
         </div>
       </div>
     </div>
