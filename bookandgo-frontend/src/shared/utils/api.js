@@ -3,10 +3,10 @@ import axios from 'axios';
 
 // Crea una instancia base de Axios
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1',
+  baseURL: 'http://127.0.0.1:8000/api/v1',
   headers: {
     'Content-Type': 'application/json',
-    Accept: 'application/json',
+    'Accept': 'application/json',
   },
 });
 
@@ -31,8 +31,8 @@ api.interceptors.request.use(
 // Tours
 export const toursApi = {
   list: (params) => api.get('/tours', { params }),
-  featured: () => api.get('/tours/featured'),
   show: (id) => api.get(`/tours/${id}`),
+  featured: () => api.get('/tours/featured'),
   related: (id) => api.get(`/tours/${id}/related`),
 };
 

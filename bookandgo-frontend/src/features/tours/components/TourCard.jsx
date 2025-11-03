@@ -17,7 +17,18 @@ const TourCard = ({ tour }) => {
     // Aquí iría la lógica para agregar/quitar de favoritos en el backend
   };
 
-  const discount = tour.discount_price
+  // 👇 HELPER FUNCTIONS PARA FORMATEAR NÚMEROS
+  const formatRating = (rating) => {
+    const num = Number(rating);
+    return !isNaN(num) && num > 0 ? num.toFixed(1) : '0.0';
+  };
+
+  const formatPrice = (price) => {
+    const num = Number(price);
+    return !isNaN(num) ? num.toFixed(2) : '0.00';
+  };
+
+  const discount = tour.discount_price && tour.price
     ? Math.round(((tour.price - tour.discount_price) / tour.price) * 100)
     : 0;
 
@@ -85,7 +96,7 @@ const TourCard = ({ tour }) => {
           <span className="text-sm font-medium">
             {tour.duration_days > 0
               ? `${tour.duration_days} ${tour.duration_days === 1 ? 'día' : 'días'}`
-              : `${tour.duration_hours} horas`}
+              : `${tour.duration_hours || 0} horas`}
           </span>
         </div>
 
@@ -96,7 +107,7 @@ const TourCard = ({ tour }) => {
               <Star
                 key={i}
                 className={`w-4 h-4 ${
-                  i < Math.floor(tour.rating)
+                  i < Math.floor(Number(tour.rating) || 0)
                     ? 'fill-primary text-primary'
                     : 'text-gray-300'
                 }`}
@@ -104,7 +115,8 @@ const TourCard = ({ tour }) => {
             ))}
           </div>
           <span className="text-sm font-semibold text-gray-900">
-            {tour.rating?.toFixed(1)} ({tour.total_reviews || 0})
+            {/* 👇 CORREGIDO - Usar helper function */}
+            {formatRating(tour.rating)} ({tour.total_reviews || 0})
           </span>
         </div>
 
@@ -116,15 +128,18 @@ const TourCard = ({ tour }) => {
               {tour.discount_price ? (
                 <>
                   <p className="text-sm text-gray-400 line-through">
-                    S/. {tour.price?.toFixed(2)}
+                    {/* 👇 CORREGIDO - Usar helper function */}
+                    S/. {formatPrice(tour.price)}
                   </p>
                   <p className="text-2xl font-black text-red-600">
-                    S/. {tour.discount_price?.toFixed(2)}
+                    {/* 👇 CORREGIDO - Usar helper function */}
+                    S/. {formatPrice(tour.discount_price)}
                   </p>
                 </>
               ) : (
                 <p className="text-2xl font-black text-gray-900">
-                  S/. {tour.price?.toFixed(2)}
+                  {/* 👇 CORREGIDO - Usar helper function */}
+                  S/. {formatPrice(tour.price)}
                 </p>
               )}
               <p className="text-xs text-gray-500 mt-1">por persona</p>

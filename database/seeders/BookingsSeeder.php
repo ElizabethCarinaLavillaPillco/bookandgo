@@ -24,7 +24,7 @@ class BookingsSeeder extends Seeder
         }
 
         $bookings = [
-            // Reserva confirmada y pagada
+            // ✅ Reserva confirmada y pagada
             [
                 'user' => $customers[0],
                 'tour' => $tours[0],
@@ -33,15 +33,23 @@ class BookingsSeeder extends Seeder
                 'number_of_people' => 2,
                 'status' => 'confirmed',
                 'confirmed_at' => now(),
-                'timeline' => [
-                    ['status' => 'pending', 'date' => Carbon::now()->subDays(2)->toISOString(), 'description' => 'Reserva creada'],
-                    ['status' => 'confirmed', 'date' => Carbon::now()->subDays(1)->toISOString(), 'description' => 'Pago confirmado'],
-                ],
+                'timeline' => json_encode([ // 👈 CONVERTIR A JSON
+                    [
+                        'status' => 'pending',
+                        'date' => Carbon::now()->subDays(2)->toISOString(),
+                        'description' => 'Reserva creada'
+                    ],
+                    [
+                        'status' => 'confirmed',
+                        'date' => Carbon::now()->subDays(1)->toISOString(),
+                        'description' => 'Pago confirmado'
+                    ],
+                ]),
                 'meeting_point' => 'Plaza de Armas de Cusco - Frente a la Catedral',
                 'agency_instructions' => 'Por favor llegar 15 minutos antes. Llevar documento de identidad original.',
                 'payment_status' => 'completed',
             ],
-            // Reserva pendiente de pago
+            // ✅ Reserva pendiente de pago
             [
                 'user' => $customers[1],
                 'tour' => $tours[0],
@@ -50,14 +58,20 @@ class BookingsSeeder extends Seeder
                 'number_of_people' => 4,
                 'status' => 'pending',
                 'confirmed_at' => null,
-                'timeline' => [
-                    ['status' => 'pending', 'date' => Carbon::now()->subHours(2)->toISOString(), 'description' => 'Reserva creada - Esperando pago'],
-                ],
+                'timeline' => json_encode([ // 👈 CONVERTIR A JSON
+                    [
+                        'status' => 'pending',
+                        'date' => Carbon::now()->subHours(2)->toISOString(),
+                        'description' => 'Reserva creada - Esperando pago'
+                    ],
+                ]),
+                'meeting_point' => null,
+                'agency_instructions' => null,
                 'payment_status' => 'pending',
             ],
-            // Reserva completada con reseña pendiente
+            // ✅ Reserva completada
             [
-                'user' => $customers[0],
+                'user' => $customers[2],
                 'tour' => $tours[0],
                 'booking_date' => Carbon::now()->subDays(7),
                 'booking_time' => '08:00:00',
@@ -66,19 +80,37 @@ class BookingsSeeder extends Seeder
                 'confirmed_at' => Carbon::now()->subDays(14),
                 'checked_in_at' => Carbon::now()->subDays(7)->setHour(8),
                 'completed_at' => Carbon::now()->subDays(3),
-                'timeline' => [
-                    ['status' => 'pending', 'date' => Carbon::now()->subDays(14)->toISOString(), 'description' => 'Reserva creada'],
-                    ['status' => 'confirmed', 'date' => Carbon::now()->subDays(14)->toISOString(), 'description' => 'Pago confirmado'],
-                    ['status' => 'in_progress', 'date' => Carbon::now()->subDays(7)->toISOString(), 'description' => 'Tour iniciado'],
-                    ['status' => 'completed', 'date' => Carbon::now()->subDays(3)->toISOString(), 'description' => 'Tour completado'],
-                ],
+                'timeline' => json_encode([ // 👈 CONVERTIR A JSON
+                    [
+                        'status' => 'pending',
+                        'date' => Carbon::now()->subDays(14)->toISOString(),
+                        'description' => 'Reserva creada'
+                    ],
+                    [
+                        'status' => 'confirmed',
+                        'date' => Carbon::now()->subDays(14)->toISOString(),
+                        'description' => 'Pago confirmado'
+                    ],
+                    [
+                        'status' => 'in_progress',
+                        'date' => Carbon::now()->subDays(7)->toISOString(),
+                        'description' => 'Tour iniciado'
+                    ],
+                    [
+                        'status' => 'completed',
+                        'date' => Carbon::now()->subDays(3)->toISOString(),
+                        'description' => 'Tour completado'
+                    ],
+                ]),
+                'meeting_point' => 'Plaza de Armas de Cusco - Frente a la Catedral',
+                'agency_instructions' => 'Por favor llegar 15 minutos antes.',
                 'payment_status' => 'completed',
                 'reminder_sent' => true,
                 'reminder_sent_at' => Carbon::now()->subDays(9),
             ],
-            // Reserva cancelada
+            // ✅ Reserva cancelada
             [
-                'user' => $customers[2],
+                'user' => $customers[3],
                 'tour' => $tours[0],
                 'booking_date' => Carbon::now()->addDays(15),
                 'booking_time' => '08:00:00',
@@ -87,11 +119,25 @@ class BookingsSeeder extends Seeder
                 'confirmed_at' => Carbon::now()->subDays(5),
                 'cancelled_at' => Carbon::now()->subDays(2),
                 'cancellation_reason' => 'Cambio de planes personales',
-                'timeline' => [
-                    ['status' => 'pending', 'date' => Carbon::now()->subDays(5)->toISOString(), 'description' => 'Reserva creada'],
-                    ['status' => 'confirmed', 'date' => Carbon::now()->subDays(5)->toISOString(), 'description' => 'Pago confirmado'],
-                    ['status' => 'cancelled', 'date' => Carbon::now()->subDays(2)->toISOString(), 'description' => 'Cancelado por el cliente'],
-                ],
+                'timeline' => json_encode([ // 👈 CONVERTIR A JSON
+                    [
+                        'status' => 'pending',
+                        'date' => Carbon::now()->subDays(5)->toISOString(),
+                        'description' => 'Reserva creada'
+                    ],
+                    [
+                        'status' => 'confirmed',
+                        'date' => Carbon::now()->subDays(5)->toISOString(),
+                        'description' => 'Pago confirmado'
+                    ],
+                    [
+                        'status' => 'cancelled',
+                        'date' => Carbon::now()->subDays(2)->toISOString(),
+                        'description' => 'Cancelado por el cliente'
+                    ],
+                ]),
+                'meeting_point' => null,
+                'agency_instructions' => null,
                 'payment_status' => 'refunded',
             ],
         ];
@@ -100,6 +146,7 @@ class BookingsSeeder extends Seeder
             $user = $bookingData['user'];
             $tour = $bookingData['tour'];
             $paymentStatus = $bookingData['payment_status'];
+            
             unset($bookingData['user'], $bookingData['tour'], $bookingData['payment_status']);
 
             $pricePerPerson = $tour->discount_price ?? $tour->price;
@@ -111,6 +158,8 @@ class BookingsSeeder extends Seeder
                 'user_id' => $user->id,
                 'tour_id' => $tour->id,
                 'agency_id' => $tour->agency_id,
+                'booking_number' => 'BG-' . strtoupper(uniqid()), // 👈 Generar aquí
+                'qr_code' => 'QR-' . strtoupper(uniqid()),
                 'price_per_person' => $pricePerPerson,
                 'subtotal' => $subtotal,
                 'discount' => 0,
@@ -119,12 +168,11 @@ class BookingsSeeder extends Seeder
                 'customer_name' => $user->name,
                 'customer_email' => $user->email,
                 'customer_phone' => $user->phone,
-                'agency_whatsapp' => $tour->agency->phone,
-                'qr_code' => 'QR-' . strtoupper(uniqid()),
-                ...$bookingData
+                'agency_whatsapp' => $tour->agency->phone ?? $tour->agency->user->phone,
+                ...$bookingData // 👈 Spread del resto
             ]);
 
-            // Crear pago asociado
+            // ✅ Crear pago asociado
             Payment::create([
                 'booking_id' => $booking->id,
                 'user_id' => $user->id,
