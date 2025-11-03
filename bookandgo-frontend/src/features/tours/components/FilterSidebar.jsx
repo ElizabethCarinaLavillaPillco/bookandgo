@@ -1,194 +1,170 @@
-import { useState } from 'react';
-import { Star, DollarSign, Clock, Tag, ChevronDown, ChevronUp } from 'lucide-react';
+// src/features/tours/components/FilterSidebar.jsx
+
+import { useState, useEffect } from 'react';
+import { DollarSign, Star, Clock, TrendingUp } from 'lucide-react';
+import api from '../../../shared/utils/api';
 
 const FilterSidebar = ({ filters, onFilterChange, onApply, onClear }) => {
-  const [expandedSections, setExpandedSections] = useState({
-    price: true,
-    category: true,
-    rating: true,
-    duration: true,
-  });
+  const [categories, setCategories] = useState([]);
 
-  const toggleSection = (section) => {
-    setExpandedSections({
-      ...expandedSections,
-      [section]: !expandedSections[section],
-    });
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get('/categories');
+      setCategories(response.data.data || response.data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
   };
 
-  const categories = [
-    { id: 1, name: 'Aventura', count: 145 },
-    { id: 2, name: 'Cultural', count: 98 },
-    { id: 3, name: 'Naturaleza', count: 87 },
-    { id: 4, name: 'Gastronomía', count: 56 },
-    { id: 5, name: 'Playas', count: 42 },
-  ];
-
-  const durations = [
-    { value: '1', label: 'Menos de 4 horas' },
-    { value: '4', label: '4-8 horas' },
-    { value: '8', label: 'Día completo (8+ horas)' },
-    { value: '24', label: 'Multi-día' },
-  ];
-
-  const ratings = [5, 4, 3, 2, 1];
-
-  const FilterSection = ({ title, icon: Icon, section, children }) => (
-    <div className="border-b border-gray-200 pb-6 mb-6">
-      <button
-        onClick={() => toggleSection(section)}
-        className="w-full flex items-center justify-between mb-4 group"
-      >
-        <div className="flex items-center gap-2">
-          <Icon className="w-5 h-5 text-primary" />
-          <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">
-            {title}
-          </h3>
-        </div>
-        {expandedSections[section] ? (
-          <ChevronUp className="w-5 h-5 text-gray-400" />
-        ) : (
-          <ChevronDown className="w-5 h-5 text-gray-400" />
-        )}
-      </button>
-      {expandedSections[section] && <div className="space-y-3">{children}</div>}
-    </div>
-  );
-
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-black text-gray-900">Filtros</h2>
-        <button
-          onClick={onClear}
-          className="text-sm text-primary hover:text-primary-dark font-semibold transition-colors"
-        >
-          Limpiar todo
-        </button>
-      </div>
+    <div className="bg-white rounded-2xl shadow-lg p-6 space-y-6">
+      <h3 className="text-xl font-bold text-gray-900">Filtros</h3>
 
       {/* Rango de Precios */}
-      <FilterSection title="Precio" icon={DollarSign} section="price">
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Precio mínimo (S/.)
-            </label>
-            <input
-              type="number"
-              placeholder="0"
-              value={filters.minPrice}
-              onChange={(e) => onFilterChange('minPrice', e.target.value)}
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-all"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Precio máximo (S/.)
-            </label>
-            <input
-              type="number"
-              placeholder="1000"
-              value={filters.maxPrice}
-              onChange={(e) => onFilterChange('maxPrice', e.target.value)}
-              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none transition-all"
-            />
-          </div>
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <DollarSign className="w-4 h-4 text-primary" />
+          Rango de precio
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <input
+            type="number"
+            placeholder="Mínimo"
+            value={filters.minPrice}
+            onChange={(e) => onFilterChange('minPrice', e.target.value)}
+            className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
+          />
+          <input
+            type="number"
+            placeholder="Máximo"
+            value={filters.maxPrice}
+            onChange={(e) => onFilterChange('maxPrice', e.target.value)}
+            className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
+          />
         </div>
-      </FilterSection>
+      </div>
 
       {/* Categorías */}
-      <FilterSection title="Categorías" icon={Tag} section="category">
-        <div className="space-y-2">
-          {categories.map((category) => (
-            <label
-              key={category.id}
-              className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group"
-            >
-              <div className="flex items-center gap-3">
-                <input
-                  type="radio"
-                  name="category"
-                  value={category.id}
-                  checked={filters.category === category.id.toString()}
-                  onChange={(e) => onFilterChange('category', e.target.value)}
-                  className="w-4 h-4 text-primary focus:ring-primary"
-                />
-                <span className="text-gray-700 group-hover:text-gray-900 font-medium">
-                  {category.name}
-                </span>
-              </div>
-              <span className="text-sm text-gray-400">({category.count})</span>
-            </label>
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-3">
+          Categoría
+        </label>
+        <select
+          value={filters.category}
+          onChange={(e) => onFilterChange('category', e.target.value)}
+          className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
+        >
+          <option value="">Todas las categorías</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
           ))}
-        </div>
-      </FilterSection>
+        </select>
+      </div>
 
-      {/* Calificación */}
-      <FilterSection title="Calificación" icon={Star} section="rating">
+      {/* Rating */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <Star className="w-4 h-4 text-primary" />
+          Calificación mínima
+        </label>
         <div className="space-y-2">
-          {ratings.map((rating) => (
-            <label
-              key={rating}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-            >
+          {[5, 4, 3, 2].map((rating) => (
+            <label key={rating} className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
                 name="rating"
                 value={rating}
                 checked={filters.rating === rating.toString()}
                 onChange={(e) => onFilterChange('rating', e.target.value)}
-                className="w-4 h-4 text-primary focus:ring-primary"
+                className="text-primary focus:ring-primary"
               />
               <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-4 h-4 ${
-                      i < rating
-                        ? 'fill-primary text-primary'
-                        : 'text-gray-300'
-                    }`}
-                  />
+                {[...Array(rating)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-primary text-primary" />
                 ))}
-                <span className="ml-2 text-sm text-gray-700 font-medium">
-                  {rating === 5 ? 'Excelente' : `${rating}+ estrellas`}
-                </span>
+                <span className="text-sm text-gray-600">y más</span>
               </div>
             </label>
           ))}
         </div>
-      </FilterSection>
+      </div>
 
       {/* Duración */}
-      <FilterSection title="Duración" icon={Clock} section="duration">
-        <div className="space-y-2">
-          {durations.map((duration) => (
-            <label
-              key={duration.value}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-            >
-              <input
-                type="radio"
-                name="duration"
-                value={duration.value}
-                checked={filters.duration === duration.value}
-                onChange={(e) => onFilterChange('duration', e.target.value)}
-                className="w-4 h-4 text-primary focus:ring-primary"
-              />
-              <span className="text-gray-700 font-medium">{duration.label}</span>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <Clock className="w-4 h-4 text-primary" />
+          Duración
+        </label>
+        <select
+          value={filters.duration}
+          onChange={(e) => onFilterChange('duration', e.target.value)}
+          className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
+        >
+          <option value="">Cualquier duración</option>
+          <option value="short">Menos de 4 horas</option>
+          <option value="medium">4-8 horas</option>
+          <option value="day">1 día completo</option>
+          <option value="multi">Más de 1 día</option>
+        </select>
+      </div>
 
-      {/* Botón Aplicar Filtros */}
-      <button
-        onClick={onApply}
-        className="w-full bg-gradient-primary hover:bg-gradient-secondary text-gray-900 font-bold py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
-      >
-        Aplicar Filtros
-      </button>
+      {/* Dificultad */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-primary" />
+          Dificultad
+        </label>
+        <select
+          value={filters.difficulty}
+          onChange={(e) => onFilterChange('difficulty', e.target.value)}
+          className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
+        >
+          <option value="">Cualquier nivel</option>
+          <option value="easy">Fácil</option>
+          <option value="moderate">Moderado</option>
+          <option value="hard">Difícil</option>
+        </select>
+      </div>
+
+      {/* Ordenar por */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-3">
+          Ordenar por
+        </label>
+        <select
+          value={filters.sortBy}
+          onChange={(e) => onFilterChange('sortBy', e.target.value)}
+          className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
+        >
+          <option value="created_at">Más recientes</option>
+          <option value="price_asc">Precio: menor a mayor</option>
+          <option value="price_desc">Precio: mayor a menor</option>
+          <option value="rating">Mejor calificados</option>
+          <option value="popular">Más populares</option>
+        </select>
+      </div>
+
+      {/* Botones */}
+      <div className="flex gap-3 pt-4 border-t">
+        <button
+          onClick={onClear}
+          className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all"
+        >
+          Limpiar
+        </button>
+        <button
+          onClick={onApply}
+          className="flex-1 px-4 py-3 bg-gradient-primary text-gray-900 font-bold rounded-xl hover:bg-gradient-secondary transition-all shadow-lg"
+        >
+          Aplicar
+        </button>
+      </div>
     </div>
   );
 };

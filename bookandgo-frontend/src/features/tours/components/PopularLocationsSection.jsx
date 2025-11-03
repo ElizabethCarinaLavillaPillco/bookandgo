@@ -1,8 +1,84 @@
+// src/features/tours/components/PopularLocationsSection.jsx
+
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, TrendingUp } from 'lucide-react';
+import { MapPin, TrendingUp, Loader2 } from 'lucide-react';
+import api from '../../../shared/utils/api';
 
 const PopularLocationsSection = () => {
-  const locations = [
+  const [locations, setLocations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPopularLocations();
+  }, []);
+
+  const fetchPopularLocations = async () => {
+    try {
+      // Obtener todos los tours publicados
+      const response = await api.get('/tours', { 
+        params: { 
+          per_page: 100 // Obtener todos para contar por ubicación
+        } 
+      });
+
+      const tours = response.data.data || response.data;
+
+      // Agrupar tours por ciudad
+      const locationCounts = {};
+      const locationImages = {};
+
+      tours.forEach((tour) => {
+        const city = tour.location_city;
+        if (city) {
+          locationCounts[city] = (locationCounts[city] || 0) + 1;
+          
+          // Guardar la primera imagen encontrada para cada ciudad
+          if (!locationImages[city] && tour.featured_image) {
+            locationImages[city] = tour.featured_image;
+          }
+        }
+      });
+
+      // Convertir a array y ordenar por cantidad de experiencias
+      const sortedLocations = Object.entries(locationCounts)
+        .map(([name, count]) => ({
+          name,
+          experiences: count,
+          image: locationImages[name] || getDefaultImage(name),
+        }))
+        .sort((a, b) => b.experiences - a.experiences)
+        .slice(0, 9); // Mostrar top 9
+
+      setLocations(sortedLocations);
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+      // Fallback a datos de ejemplo
+      setLocations(fallbackLocations);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función para obtener imagen por defecto según la ciudad
+  const getDefaultImage = (cityName) => {
+    const defaultImages = {
+      'Cusco': 'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=800',
+      'Lima': 'https://images.unsplash.com/photo-1531968455001-5c5272a41129?w=800',
+      'Arequipa': 'https://images.unsplash.com/photo-1580619305218-8423a7ef79b4?w=800',
+      'Paracas': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800',
+      'Iquitos': 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=800',
+      'Puno': 'https://images.unsplash.com/photo-1589986966641-e8c2c7a35fbb?w=800',
+      'Huaraz': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
+      'Trujillo': 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=800',
+      'Chiclayo': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+    };
+
+    return defaultImages[cityName] || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800';
+  };
+
+  // Datos de fallback
+  const fallbackLocations = [
     {
       name: 'Cusco',
       image: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=800',
@@ -18,37 +94,24 @@ const PopularLocationsSection = () => {
       image: 'https://images.unsplash.com/photo-1580619305218-8423a7ef79b4?w=800',
       experiences: 67,
     },
-    {
-      name: 'Paracas',
-      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800',
-      experiences: 52,
-    },
-    {
-      name: 'Iquitos',
-      image: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=800',
-      experiences: 41,
-    },
-    {
-      name: 'Puno',
-      image: 'https://images.unsplash.com/photo-1589986966641-e8c2c7a35fbb?w=800',
-      experiences: 38,
-    },
-    {
-      name: 'Huaraz',
-      image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
-      experiences: 34,
-    },
-    {
-      name: 'Trujillo',
-      image: 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=800',
-      experiences: 29,
-    },
-    {
-      name: 'Chiclayo',
-      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
-      experiences: 25,
-    },
   ];
+
+  if (loading) {
+    return (
+      <section className="py-20 bg-white">
+        <div className="container-custom">
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-12 h-12 text-primary animate-spin" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Si no hay ubicaciones, no mostrar la sección
+  if (locations.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-20 bg-white">
@@ -65,18 +128,20 @@ const PopularLocationsSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {locations.map((location, index) => (
             <Link
-                key={index}
-                to={`/tours?location=${location.name}`}
-                className="group flex items-center gap-4 bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden hover:-translate-y-1 animate-fade-in"
-                style={{ animationDelay: `${index * 0.05}s` }}
+              key={index}
+              to={`/tours?location=${encodeURIComponent(location.name)}`}
+              className="group flex items-center gap-4 bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden hover:-translate-y-1 animate-fade-in"
+              style={{ animationDelay: `${index * 0.05}s` }}
             >
-
               {/* Imagen */}
               <div className="relative w-32 h-32 flex-shrink-0 overflow-hidden">
                 <img
                   src={location.image}
                   alt={location.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  onError={(e) => {
+                    e.target.src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800';
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
               </div>
@@ -89,7 +154,7 @@ const PopularLocationsSection = () => {
                 <div className="flex items-center gap-2 text-gray-600">
                   <MapPin className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium">
-                    {location.experiences} experiencias encontradas
+                    {location.experiences} {location.experiences === 1 ? 'experiencia' : 'experiencias'}
                   </span>
                 </div>
 

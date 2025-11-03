@@ -1,3 +1,5 @@
+// src/features/tours/pages/ToursPage.jsx (COMPLETO)
+
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
@@ -11,47 +13,81 @@ const ToursPage = () => {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-  const [totalResults, setTotalResults] = useState(0);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    currentPage: 1,
+    lastPage: 1,
+    perPage: 12,
+  });
 
   // Estados de filtros
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
     location: searchParams.get('location') || '',
-    checkIn: searchParams.get('from') || '',
-    checkOut: searchParams.get('to') || '',
-    minPrice: '',
-    maxPrice: '',
-    category: '',
-    rating: '',
-    duration: '',
+    minPrice: searchParams.get('min_price') || '',
+    maxPrice: searchParams.get('max_price') || '',
+    category: searchParams.get('category_id') || '',
+    rating: searchParams.get('min_rating') || '',
+    duration: searchParams.get('duration') || '',
+    difficulty: searchParams.get('difficulty') || '',
+    sortBy: searchParams.get('sort_by') || 'created_at',
   });
 
   useEffect(() => {
     fetchTours();
   }, [searchParams]);
 
-  const fetchTours = async () => {
+  const fetchTours = async (page = 1) => {
     setLoading(true);
     try {
-      const response = await api.get('/tours', {
-        params: {
-          search: searchParams.get('search'),
-          location: searchParams.get('location'),
-          from: searchParams.get('from'),
-          to: searchParams.get('to'),
-          min_price: filters.minPrice,
-          max_price: filters.maxPrice,
-          category_id: filters.category,
-          per_page: 15,
-        },
+      const params = {
+        search: searchParams.get('search'),
+        location: searchParams.get('location'),
+        min_price: searchParams.get('min_price'),
+        max_price: searchParams.get('max_price'),
+        category_id: searchParams.get('category_id'),
+        min_rating: searchParams.get('min_rating'),
+        duration: searchParams.get('duration'),
+        difficulty: searchParams.get('difficulty'),
+        sort_by: searchParams.get('sort_by'),
+        per_page: 12,
+        page,
+      };
+
+      // Filtrar parámetros vacíos
+      Object.keys(params).forEach(key => {
+        if (!params[key]) delete params[key];
       });
-      setTours(response.data.data || response.data);
-      setTotalResults(response.data.total || response.data.length);
+
+      const response = await api.get('/tours', { params });
+
+      // Manejar respuesta paginada o array simple
+      if (response.data.data) {
+        setTours(response.data.data);
+        setPagination({
+          total: response.data.total || 0,
+          currentPage: response.data.current_page || 1,
+          lastPage: response.data.last_page || 1,
+          perPage: response.data.per_page || 12,
+        });
+      } else {
+        setTours(response.data);
+        setPagination({
+          total: response.data.length,
+          currentPage: 1,
+          lastPage: 1,
+          perPage: 12,
+        });
+      }
     } catch (error) {
       console.error('Error fetching tours:', error);
-      // Datos de ejemplo si falla el backend
-      setTours(exampleTours);
-      setTotalResults(exampleTours.length);
+      setTours([]);
+      setPagination({
+        total: 0,
+        currentPage: 1,
+        lastPage: 1,
+        perPage: 12,
+      });
     } finally {
       setLoading(false);
     }
@@ -63,9 +99,27 @@ const ToursPage = () => {
 
   const applyFilters = () => {
     const params = new URLSearchParams();
+    
+    // Mapeo de filtros del frontend a parámetros de API
+    const apiMapping = {
+      search: 'search',
+      location: 'location',
+      minPrice: 'min_price',
+      maxPrice: 'max_price',
+      category: 'category_id',
+      rating: 'min_rating',
+      duration: 'duration',
+      difficulty: 'difficulty',
+      sortBy: 'sort_by',
+    };
+
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.append(key, value);
+      if (value) {
+        const apiKey = apiMapping[key] || key;
+        params.append(apiKey, value);
+      }
     });
+    
     setSearchParams(params);
   };
 
@@ -73,69 +127,22 @@ const ToursPage = () => {
     setFilters({
       search: '',
       location: '',
-      checkIn: '',
-      checkOut: '',
       minPrice: '',
       maxPrice: '',
       category: '',
       rating: '',
       duration: '',
+      difficulty: '',
+      sortBy: 'created_at',
     });
     setSearchParams({});
   };
 
-  // Tours de ejemplo
-  const exampleTours = [
-    {
-      id: 1,
-      title: 'TOUR EN CUATRIMOTO AL VALLE ROJO Y LA MONTAÑA ARCOÍRIS CON COMIDAS INCLUIDAS',
-      category: { name: 'Aventura' },
-      featured_image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
-      duration_days: 1,
-      duration_hours: 0,
-      rating: 4.6,
-      total_reviews: 28,
-      price: 80,
-      discount_price: 64,
-      location_city: 'Cusco',
-      badge: 'Nuestra elección',
-    },
-    {
-      id: 2,
-      title: 'CUSCO: TOUR DE MEDIO DÍA POR LA CIUDAD CON SACSAYHUAMÁN Y QENQO',
-      category: { name: 'Cultural' },
-      featured_image: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=800',
-      duration_hours: 5,
-      rating: 4.6,
-      total_reviews: 365,
-      price: 72,
-      discount_price: 51,
-      location_city: 'Cusco',
-    },
-    {
-      id: 3,
-      title: 'CUSCO: EXCURSIÓN A CABALLO A LOS TEMPLOS INCAS Y MIRADORES',
-      category: { name: 'Aventura' },
-      featured_image: 'https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=800',
-      duration_hours: 3.5,
-      rating: 0,
-      total_reviews: 0,
-      price: 60,
-      location_city: 'Cusco',
-      badge: 'Nueva actividad',
-    },
-    {
-      id: 4,
-      title: 'TOUR PRIVADO DE MEDIO DÍA A MACHU PICCHU, PERÚ',
-      category: { name: 'Cultural' },
-      featured_image: 'https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=800',
-      duration_hours: 3,
-      rating: 4.8,
-      total_reviews: 105,
-      price: 199,
-      location_city: 'Cusco',
-    },
-  ];
+  const handleLoadMore = () => {
+    if (pagination.currentPage < pagination.lastPage) {
+      fetchTours(pagination.currentPage + 1);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -173,7 +180,7 @@ const ToursPage = () => {
                   {filters.location || 'Todas las atracciones'}
                 </h1>
                 <p className="text-gray-600">
-                  {loading ? 'Cargando...' : `${totalResults} experiencias encontradas`}
+                  {loading ? 'Cargando...' : `${pagination.total} experiencias encontradas`}
                 </p>
               </div>
 
@@ -186,6 +193,104 @@ const ToursPage = () => {
                 Filtros
               </button>
             </div>
+
+            {/* Filtros activos */}
+            {Object.values(filters).some(v => v && v !== 'created_at') && (
+              <div className="flex items-center gap-2 mb-6 flex-wrap">
+                <span className="text-sm font-semibold text-gray-700">Filtros activos:</span>
+                {filters.search && (
+                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2">
+                    Búsqueda: {filters.search}
+                    <button 
+                      onClick={() => {
+                        handleFilterChange('search', '');
+                        applyFilters();
+                      }}
+                      className="hover:text-primary-dark"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {filters.location && (
+                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2">
+                    Ubicación: {filters.location}
+                    <button 
+                      onClick={() => {
+                        handleFilterChange('location', '');
+                        applyFilters();
+                      }}
+                      className="hover:text-primary-dark"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {(filters.minPrice || filters.maxPrice) && (
+                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2">
+                    S/. {filters.minPrice || '0'} - {filters.maxPrice || '∞'}
+                    <button 
+                      onClick={() => {
+                        handleFilterChange('minPrice', '');
+                        handleFilterChange('maxPrice', '');
+                        applyFilters();
+                      }}
+                      className="hover:text-primary-dark"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {filters.category && (
+                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2">
+                    Categoría
+                    <button 
+                      onClick={() => {
+                        handleFilterChange('category', '');
+                        applyFilters();
+                      }}
+                      className="hover:text-primary-dark"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {filters.rating && (
+                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2">
+                    Rating: {filters.rating}⭐+
+                    <button 
+                      onClick={() => {
+                        handleFilterChange('rating', '');
+                        applyFilters();
+                      }}
+                      className="hover:text-primary-dark"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                {filters.duration && (
+                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2">
+                    Duración
+                    <button 
+                      onClick={() => {
+                        handleFilterChange('duration', '');
+                        applyFilters();
+                      }}
+                      className="hover:text-primary-dark"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+                <button
+                  onClick={clearFilters}
+                  className="text-sm text-red-600 hover:text-red-700 font-semibold"
+                >
+                  Limpiar todos
+                </button>
+              </div>
+            )}
 
             {/* Loading State */}
             {loading ? (
@@ -211,12 +316,23 @@ const ToursPage = () => {
                   ))}
                 </div>
 
-                {/* Botón Ver Más */}
-                <div className="text-center mt-12">
-                  <button className="bg-gradient-primary hover:bg-gradient-secondary text-gray-900 font-bold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl">
-                    Ver más
-                  </button>
-                </div>
+                {/* Paginación */}
+                {pagination.lastPage > 1 && (
+                  <div className="text-center mt-12">
+                    {pagination.currentPage < pagination.lastPage ? (
+                      <button 
+                        onClick={handleLoadMore}
+                        className="bg-gradient-primary hover:bg-gradient-secondary text-gray-900 font-bold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl"
+                      >
+                        Ver más ({pagination.total - tours.length} restantes)
+                      </button>
+                    ) : (
+                      <p className="text-gray-600">
+                        Mostrando todos los resultados ({pagination.total} tours)
+                      </p>
+                    )}
+                  </div>
+                )}
               </>
             ) : (
               <div className="text-center py-20">
@@ -231,7 +347,7 @@ const ToursPage = () => {
                 </p>
                 <button
                   onClick={clearFilters}
-                  className="btn-primary"
+                  className="bg-gradient-primary text-gray-900 font-bold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl"
                 >
                   Limpiar filtros
                 </button>
