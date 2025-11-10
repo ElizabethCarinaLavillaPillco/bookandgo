@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/Api/BookingController.php
 
 namespace App\Http\Controllers\Api;
 
@@ -46,7 +47,8 @@ class BookingController extends Controller
             'tour.images',
             'tour.agency.user',
             'payment',
-            'review'
+            'review',
+            'documents'
         ])->findOrFail($id);
 
         // Verificar permisos
@@ -66,29 +68,39 @@ class BookingController extends Controller
             'tour_id' => 'required|exists:tours,id',
             'booking_date' => 'required|date|after:today',
             'booking_time' => 'nullable',
-            'number_of_people' => 'required|integer|min:1',
-            'customer_name' => 'required|string|max:255',
-            'customer_email' => 'required|email',
-            'customer_phone' => 'required|string|max:20',
-            'special_requirements' => 'nullable|string|max:500',
+            'adults' => 'required|integer|min:1',
+            'children' => 'nullable|integer|min:0',
+            'infants' => 'nullable|integer|min:0',
+            'special_requests' => 'nullable|string|max:500',
+            'total_price' => 'required|numeric|min:0',
+            'payment_method' => 'required|in:card,paypal,transfer',
         ]);
 
         $tour = Tour::findOrFail($validated['tour_id']);
         $user = $request->user();
 
+        // Calcular total de personas
+        $totalPeople = $validated['adults'] + ($validated['children'] ?? 0);
+
         // Validar disponibilidad
-        if ($validated['number_of_people'] > $tour->max_people) {
+        if ($totalPeople > $tour->max_people) {
             return response()->json([
                 'message' => "El tour solo acepta un máximo de {$tour->max_people} personas"
             ], 422);
         }
 
+        if ($totalPeople < $tour->min_people) {
+            return response()->json([
+                'message' => "El tour requiere un mínimo de {$tour->min_people} personas"
+            ], 422);
+        }
+
         // Calcular precios
-        $pricePerPerson = $tour->getCurrentPrice();
-        $subtotal = $pricePerPerson * $validated['number_of_people'];
-        $discount = 0; // Aquí puedes agregar lógica de descuentos
-        $tax = $subtotal * 0.18; // IGV 18% en Perú
-        $totalPrice = $subtotal - $discount + $tax;
+        $pricePerPerson = $tour->discount_price ?? $tour->price;
+        $subtotal = $validated['total_price'];
+        $tax = $subtotal * 0.00; // Sin impuestos por ahora
+        $discount = 0;
+        $totalPrice = $subtotal + $tax - $discount;
 
         DB::beginTransaction();
         try {
@@ -98,29 +110,35 @@ class BookingController extends Controller
                 'agency_id' => $tour->agency_id,
                 'booking_date' => $validated['booking_date'],
                 'booking_time' => $validated['booking_time'] ?? null,
-                'number_of_people' => $validated['number_of_people'],
+                'number_of_people' => $totalPeople,
                 'price_per_person' => $pricePerPerson,
                 'subtotal' => $subtotal,
                 'discount' => $discount,
                 'tax' => $tax,
                 'total_price' => $totalPrice,
-                'customer_name' => $validated['customer_name'],
-                'customer_email' => $validated['customer_email'],
-                'customer_phone' => $validated['customer_phone'],
-                'special_requirements' => $validated['special_requirements'] ?? null,
-                'status' => 'pending',
+                'customer_name' => $user->name,
+                'customer_email' => $user->email,
+                'customer_phone' => $user->phone ?? '',
+                'special_requirements' => $validated['special_requests'] ?? null,
+                'status' => 'confirmed',
+                'confirmed_at' => now(),
             ]);
+
+            // Incrementar contador de reservas del tour
+            $tour->increment('total_bookings');
 
             DB::commit();
 
             return response()->json([
+                'success' => true,
                 'message' => 'Reserva creada exitosamente',
-                'booking' => $booking->load('tour', 'payment')
+                'data' => $booking->load('tour', 'payment')
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
+                'success' => false,
                 'message' => 'Error al crear la reserva',
                 'error' => $e->getMessage()
             ], 500);
@@ -145,18 +163,19 @@ class BookingController extends Controller
         }
 
         $validated = $request->validate([
-            'reason' => 'required|string|max:500'
+            'reason' => 'nullable|string|max:500'
         ]);
 
         $booking->update([
             'status' => 'cancelled',
             'cancelled_at' => now(),
-            'cancellation_reason' => $validated['reason']
+            'cancellation_reason' => $validated['reason'] ?? 'Sin razón especificada'
         ]);
 
         return response()->json([
+            'success' => true,
             'message' => 'Reserva cancelada exitosamente',
-            'booking' => $booking
+            'data' => $booking
         ]);
     }
 
@@ -177,9 +196,55 @@ class BookingController extends Controller
         ]);
 
         return response()->json([
+            'success' => true,
             'message' => 'Reserva confirmada exitosamente',
-            'booking' => $booking
+            'data' => $booking
+        ]);
+    }
+
+    public function checkIn($id)
+    {
+        $booking = Booking::findOrFail($id);
+        $user = request()->user();
+
+        if (!$user->isAgency() || $booking->agency_id !== $user->agency->id) {
+            return response()->json([
+                'message' => 'No tienes permiso'
+            ], 403);
+        }
+
+        $booking->update([
+            'status' => 'in_progress',
+            'checked_in_at' => now()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Check-in realizado',
+            'data' => $booking
+        ]);
+    }
+
+    public function complete($id)
+    {
+        $booking = Booking::findOrFail($id);
+        $user = request()->user();
+
+        if (!$user->isAgency() || $booking->agency_id !== $user->agency->id) {
+            return response()->json([
+                'message' => 'No tienes permiso'
+            ], 403);
+        }
+
+        $booking->update([
+            'status' => 'completed',
+            'completed_at' => now()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tour completado',
+            'data' => $booking
         ]);
     }
 }
-            

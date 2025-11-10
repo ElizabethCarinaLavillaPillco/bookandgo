@@ -1,3 +1,5 @@
+// src/store/cartStore.js
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -5,66 +7,38 @@ const useCartStore = create(
   persist(
     (set, get) => ({
       items: [],
-
-      addItem: (tour, quantity = 1, bookingDate) => {
-        const items = get().items;
-        const existingItem = items.find(item => item.tour.id === tour.id);
-
-        if (existingItem) {
-          set({
-            items: items.map(item =>
-              item.tour.id === tour.id
-                ? { ...item, quantity: item.quantity + quantity }
-                : item
-            ),
-          });
-        } else {
-          set({
-            items: [
-              ...items,
-              {
-                tour,
-                quantity,
-                bookingDate: bookingDate || null,
-                addedAt: new Date().toISOString(),
-              },
-            ],
-          });
-        }
+      
+      addItem: (item) => {
+        set((state) => ({
+          items: [...state.items, { ...item, id: Date.now() }],
+        }));
       },
 
-      removeItem: (tourId) => {
-        set({
-          items: get().items.filter(item => item.tour.id !== tourId),
-        });
+      removeItem: (itemId) => {
+        set((state) => ({
+          items: state.items.filter((item) => item.id !== itemId),
+        }));
       },
 
-      updateQuantity: (tourId, quantity) => {
-        if (quantity <= 0) {
-          get().removeItem(tourId);
-          return;
-        }
-
-        set({
-          items: get().items.map(item =>
-            item.tour.id === tourId ? { ...item, quantity } : item
+      updateItem: (itemId, updates) => {
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.id === itemId ? { ...item, ...updates } : item
           ),
-        });
+        }));
       },
 
       clearCart: () => {
         set({ items: [] });
       },
 
-      getTotal: () => {
-        return get().items.reduce((total, item) => {
-          const price = item.tour.discount_price || item.tour.price;
-          return total + price * item.quantity;
-        }, 0);
+      // Computed values
+      get total() {
+        return get().items.reduce((sum, item) => sum + item.total_price, 0);
       },
 
-      getItemCount: () => {
-        return get().items.reduce((count, item) => count + item.quantity, 0);
+      get itemCount() {
+        return get().items.length;
       },
     }),
     {

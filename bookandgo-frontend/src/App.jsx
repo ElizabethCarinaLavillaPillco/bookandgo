@@ -16,6 +16,10 @@ import LoginPage from './features/auth/pages/LoginPage';
 import RegisterPage from './features/auth/pages/RegisterPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
 import CartPage from './features/booking/pages/CartPage';
+import BookingPage from './features/booking/pages/BookingPage';
+import CheckoutPage from './features/booking/pages/CheckoutPage';
+import BookingSuccessPage from './features/booking/pages/BookingSuccessPage';
+import MyBookingsPage from './features/customer/pages/MyBookingsPage';
 
 // Agency Pages
 import AgencyDashboard from './features/agency/pages/AgencyDashboard';
@@ -110,6 +114,43 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="booking/:id" 
+              element={
+                <ProtectedRoute allowedRoles={['customer']}>
+                  <BookingPage />
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="checkout" 
+              element={
+                <ProtectedRoute allowedRoles={['customer']}>
+                  <CheckoutPage />
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="booking/success" 
+              element={
+                <ProtectedRoute allowedRoles={['customer']}>
+                  <BookingSuccessPage />
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Customer Bookings */}
+            <Route 
+              path="profile/bookings" 
+              element={
+                <ProtectedRoute allowedRoles={['customer']}>
+                  <MyBookingsPage />
+                </ProtectedRoute>
+              } 
+            />
+
           </Route>
         </Routes>
       </BrowserRouter>

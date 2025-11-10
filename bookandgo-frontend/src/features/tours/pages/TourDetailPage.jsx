@@ -416,9 +416,13 @@ const TourDetailPage = () => {
                 Agregar al carrito
               </button>
 
-              <button className="btn-primary w-full" onClick={handleReserveNow}>
-                Reservar ahora
-              </button>
+              <Link
+                to={`/booking/${tour.id}`}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-primary hover:bg-gradient-secondary text-gray-900 font-bold px-6 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl"
+              >
+                <Calendar className="w-5 h-5" />
+                Reservar Ahora
+              </Link>
             </div>
 
             {/* Info de la Agencia */}
