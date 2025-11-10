@@ -1,79 +1,68 @@
+// src/features/tours/pages/TourDetailPage.jsx
+
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Heart, Star, MapPin, Clock, Users, Calendar, 
-  Check, X, ChevronLeft, ChevronRight, Share2,
-  Mountain, Shield
+  Check, X, ChevronLeft, ChevronRight, Share2, Shield
 } from 'lucide-react';
-import useCartStore from '../../../store/cartStore';
-import { toursApi } from '../../../shared/utils/api';
+import api from '../../../shared/utils/api';
 import './TourDetailPage.css';
 
 const TourDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  
   const [tour, setTour] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // 👈 AGREGADO
+  const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [selectedDate, setSelectedDate] = useState('');
-  const [numberOfPeople, setNumberOfPeople] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const [isFavorite, setIsFavorite] = useState(false);
-  const { addItem } = useCartStore();
 
-  // 👇 FUNCIÓN ÚNICA Y CORRECTA
   useEffect(() => {
-    const fetchTour = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        console.log('Fetching tour:', id); // Debug
-        
-        const response = await toursApi.show(id);
-        console.log('Tour data:', response.data); // Debug
-        
-        setTour(response.data);
-      } catch (err) {
-        console.error('Error fetching tour:', err);
-        setError('No se pudo cargar el tour');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      fetchTour();
-    }
+    fetchTour();
   }, [id]);
 
-  const handleAddToCart = () => {
-    if (!selectedDate) {
-      alert('Por favor selecciona una fecha');
-      return;
+  const fetchTour = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await api.get(`/tours/${id}`);
+      console.log('Tour data:', response.data);
+      
+      setTour(response.data);
+    } catch (err) {
+      console.error('Error fetching tour:', err);
+      setError('No se pudo cargar el tour');
+    } finally {
+      setLoading(false);
     }
-    addItem(tour, numberOfPeople, selectedDate);
-    alert('Tour agregado al carrito');
   };
 
-  const handleReserveNow = () => {
-    handleAddToCart();
-    window.location.href = '/cart';
-  };
-
-  // 👇 Función para obtener array de imágenes (maneja tanto objetos como strings)
+  // Obtener array de imágenes
   const getImageUrls = () => {
     if (!tour) return [];
     
-    // Si tour.images es array de objetos con image_url
-    if (tour.images && Array.isArray(tour.images) && tour.images.length > 0) {
-      if (typeof tour.images[0] === 'object') {
-        return tour.images.map(img => img.image_url);
-      }
-      return tour.images;
+    const images = [];
+    
+    // Agregar featured_image primero
+    if (tour.featured_image) {
+      images.push(tour.featured_image);
     }
     
-    // Si solo tiene featured_image
-    return tour.featured_image ? [tour.featured_image] : [];
+    // Agregar imágenes adicionales
+    if (tour.images && Array.isArray(tour.images)) {
+      tour.images.forEach(img => {
+        const url = typeof img === 'object' ? img.image_url : img;
+        if (url && url !== tour.featured_image) {
+          images.push(url);
+        }
+      });
+    }
+    
+    return images.length > 0 ? images : ['https://via.placeholder.com/800x600'];
   };
 
   const imageUrls = getImageUrls();
@@ -90,39 +79,36 @@ const TourDetailPage = () => {
     );
   };
 
-  // 👇 ESTADOS DE CARGA Y ERROR
+  const handleReserveNow = () => {
+    navigate(`/booking/${tour.id}`);
+  };
+
+  // Estados de carga y error
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="spinner"></div>
-        <p>Cargando detalles del tour...</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando detalles del tour...</p>
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error || !tour) {
     return (
-      <div className="error-container">
-        <h2>{error}</h2>
-        <Link to="/tours" className="btn-primary mt-4">
-          Volver a Tours
-        </Link>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            {error || 'Tour no encontrado'}
+          </h2>
+          <Link to="/tours" className="btn-primary">
+            Volver a Tours
+          </Link>
+        </div>
       </div>
     );
   }
-
-  if (!tour) {
-    return (
-      <div className="error-container">
-        <h2>Tour no encontrado</h2>
-        <Link to="/tours" className="btn-primary mt-4">
-          Volver a Tours
-        </Link>
-      </div>
-    );
-  }
-
-  const totalPrice = (tour.discount_price || tour.price) * numberOfPeople;
 
   return (
     <div className="tour-detail-page">
@@ -140,18 +126,17 @@ const TourDetailPage = () => {
         <h1 className="tour-title">{tour.title}</h1>
 
         <div className="tour-layout">
-          {/* Columna Izquierda - Galería e Información */}
+          {/* Columna Izquierda */}
           <div className="tour-main-content">
             {/* Galería de Imágenes */}
             <div className="image-gallery">
               <div className="main-image-container">
                 <img 
-                  src={imageUrls[currentImageIndex] || 'https://via.placeholder.com/800x600'} 
+                  src={imageUrls[currentImageIndex]} 
                   alt={tour.title}
                   className="main-image"
                 />
                 
-                {/* Botones de navegación - solo si hay más de 1 imagen */}
                 {imageUrls.length > 1 && (
                   <>
                     <button className="gallery-nav prev" onClick={prevImage}>
@@ -163,7 +148,6 @@ const TourDetailPage = () => {
                   </>
                 )}
 
-                {/* Botones de acción */}
                 <div className="image-actions">
                   <button className="action-btn">
                     <Share2 size={20} />
@@ -174,15 +158,14 @@ const TourDetailPage = () => {
                     onClick={() => setIsFavorite(!isFavorite)}
                   >
                     <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
-                    Añadir a la lista de deseos
+                    Guardar
                   </button>
                 </div>
               </div>
 
-              {/* Miniaturas - solo si hay más de 1 imagen */}
               {imageUrls.length > 1 && (
                 <div className="thumbnails">
-                  {imageUrls.slice(0, 4).map((img, index) => (
+                  {imageUrls.slice(0, 5).map((img, index) => (
                     <img
                       key={index}
                       src={img}
@@ -191,9 +174,9 @@ const TourDetailPage = () => {
                       onClick={() => setCurrentImageIndex(index)}
                     />
                   ))}
-                  {imageUrls.length > 4 && (
+                  {imageUrls.length > 5 && (
                     <div className="thumbnail view-more">
-                      <span>+{imageUrls.length - 4}</span>
+                      <span>+{imageUrls.length - 5}</span>
                     </div>
                   )}
                 </div>
@@ -207,9 +190,9 @@ const TourDetailPage = () => {
                 <div>
                   <div className="feature-label">Duración:</div>
                   <div className="feature-value">
-                    {tour.duration_days > 0
-                      ? `${tour.duration_days} ${tour.duration_days === 1 ? 'día' : 'días'}`
-                      : `${tour.duration_hours} horas`}
+                    {tour.duration_days > 0 && `${tour.duration_days} día${tour.duration_days > 1 ? 's' : ''}`}
+                    {tour.duration_days > 0 && tour.duration_hours > 0 && ' y '}
+                    {tour.duration_hours > 0 && `${tour.duration_hours} hora${tour.duration_hours > 1 ? 's' : ''}`}
                   </div>
                 </div>
               </div>
@@ -219,7 +202,7 @@ const TourDetailPage = () => {
                 <div>
                   <div className="feature-label">Ubicación:</div>
                   <div className="feature-value">
-                    {tour.location_city}, {tour.location_country}
+                    {tour.location_city}, {tour.location_region}
                   </div>
                 </div>
               </div>
@@ -227,8 +210,10 @@ const TourDetailPage = () => {
               <div className="feature-item">
                 <Users className="feature-icon" />
                 <div>
-                  <div className="feature-label">Grupo máximo:</div>
-                  <div className="feature-value">{tour.max_people} personas</div>
+                  <div className="feature-label">Grupo:</div>
+                  <div className="feature-value">
+                    {tour.min_people} - {tour.max_people} personas
+                  </div>
                 </div>
               </div>
 
@@ -237,13 +222,14 @@ const TourDetailPage = () => {
                 <div>
                   <div className="feature-label">Dificultad:</div>
                   <div className="feature-value capitalize">
-                    {tour.difficulty_level || 'Moderado'}
+                    {tour.difficulty_level === 'easy' ? 'Fácil' : 
+                     tour.difficulty_level === 'moderate' ? 'Moderado' : 'Difícil'}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Tabs de Contenido */}
+            {/* Tabs */}
             <div className="content-tabs">
               <div className="tabs-header">
                 <button 
@@ -265,8 +251,8 @@ const TourDetailPage = () => {
                   INCLUYE
                 </button>
                 <button 
-                  className={`tab-btn ${activeTab === 'not-includes' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('not-includes')}
+                  className={`tab-btn ${activeTab === 'excludes' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('excludes')}
                 >
                   NO INCLUYE
                 </button>
@@ -297,23 +283,27 @@ const TourDetailPage = () => {
                   <div className="content-section">
                     <ul className="check-list">
                       {tour.includes ? tour.includes.split('\n').map((item, i) => (
-                        <li key={i}>
-                          <Check className="check-icon" />
-                          {item.replace('•', '').trim()}
-                        </li>
+                        item.trim() && (
+                          <li key={i}>
+                            <Check className="check-icon" />
+                            {item.replace(/^[•\-]\s*/, '').trim()}
+                          </li>
+                        )
                       )) : <li>No hay información disponible</li>}
                     </ul>
                   </div>
                 )}
 
-                {activeTab === 'not-includes' && (
+                {activeTab === 'excludes' && (
                   <div className="content-section">
                     <ul className="check-list exclude">
                       {tour.excludes ? tour.excludes.split('\n').map((item, i) => (
-                        <li key={i}>
-                          <X className="x-icon" />
-                          {item.replace('•', '').trim()}
-                        </li>
+                        item.trim() && (
+                          <li key={i}>
+                            <X className="x-icon" />
+                            {item.replace(/^[•\-]\s*/, '').trim()}
+                          </li>
+                        )
                       )) : <li>No hay información disponible</li>}
                     </ul>
                   </div>
@@ -335,12 +325,12 @@ const TourDetailPage = () => {
               
               <div className="reviews-summary">
                 <div className="rating-big">
-                  <div className="rating-number">{tour.rating || 0}</div>
+                  <div className="rating-number">{parseFloat(tour.rating || 0).toFixed(1)}</div>
                   <div className="stars">
                     {[...Array(5)].map((_, i) => (
                       <Star 
                         key={i} 
-                        fill={i < Math.floor(tour.rating) ? "var(--color-primary)" : "none"} 
+                        fill={i < Math.floor(tour.rating || 0) ? "var(--color-primary)" : "none"} 
                         color="var(--color-primary)" 
                         size={20} 
                       />
@@ -360,45 +350,14 @@ const TourDetailPage = () => {
               <div className="price-section">
                 <div className="price-label">PRECIO POR PERSONA</div>
                 <div className="price-amount">
-                  S/ {tour.discount_price || tour.price}
+                  S/. {parseFloat(tour.discount_price || tour.price).toFixed(2)}
                   {tour.discount_price && (
-                    <span className="original-price">S/ {tour.price}</span>
+                    <span className="original-price">
+                      S/. {parseFloat(tour.price).toFixed(2)}
+                    </span>
                   )}
                 </div>
-                <div className="price-note">impuestos incluidos</div>
-              </div>
-
-              <div className="booking-controls">
-                <div className="control-group">
-                  <label>
-                    <Users size={18} />
-                    Personas
-                  </label>
-                  <div className="counter">
-                    <button onClick={() => setNumberOfPeople(Math.max(1, numberOfPeople - 1))}>−</button>
-                    <span>{numberOfPeople}</span>
-                    <button onClick={() => setNumberOfPeople(Math.min(tour.max_people, numberOfPeople + 1))}>+</button>
-                  </div>
-                </div>
-
-                <div className="control-group">
-                  <label>
-                    <Calendar size={18} />
-                    Fecha
-                  </label>
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="input-field"
-                    min={new Date().toISOString().split('T')[0]}
-                  />
-                </div>
-              </div>
-
-              <div className="price-section mt-4">
-                <div className="price-label">TOTAL</div>
-                <div className="price-amount">S/ {totalPrice.toFixed(2)}</div>
+                <div className="price-note">Impuestos incluidos</div>
               </div>
 
               <div className="booking-info">
@@ -408,21 +367,25 @@ const TourDetailPage = () => {
                 </p>
                 <p>
                   <Check size={16} className="text-primary" />
-                  Cancelación flexible
+                  Cancelación hasta {tour.cancellation_hours}h antes
+                </p>
+                <p>
+                  <Check size={16} className="text-primary" />
+                  Confirmación instantánea
                 </p>
               </div>
 
-              <button className="btn-secondary w-full mb-2" onClick={handleAddToCart}>
-                Agregar al carrito
-              </button>
-
-              <Link
-                to={`/booking/${tour.id}`}
+              <button 
+                onClick={handleReserveNow}
                 className="w-full flex items-center justify-center gap-2 bg-gradient-primary hover:bg-gradient-secondary text-gray-900 font-bold px-6 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl"
               >
                 <Calendar className="w-5 h-5" />
                 Reservar Ahora
-              </Link>
+              </button>
+
+              <p className="text-xs text-gray-500 text-center mt-4">
+                Selecciona fecha y cantidad en el siguiente paso
+              </p>
             </div>
 
             {/* Info de la Agencia */}
@@ -430,22 +393,27 @@ const TourDetailPage = () => {
               <div className="agency-card mt-4">
                 <h3>Operado por</h3>
                 <div className="agency-info">
-                  {tour.agency.logo && (
-                    <img src={tour.agency.logo} alt={tour.agency.business_name} />
-                  )}
                   <div>
-                    <h4>{tour.agency.business_name}</h4>
+                    <h4>{tour.agency.business_name || 'Agencia de Tours'}</h4>
                     <div className="agency-rating">
                       <Star fill="var(--color-primary)" size={16} />
-                      <span>{tour.agency.rating}</span>
+                      <span>{parseFloat(tour.agency.rating || 0).toFixed(1)}</span>
                       <span className="text-gray-500">
-                        ({tour.agency.total_reviews} reseñas)
+                        ({tour.agency.total_reviews || 0} reseñas)
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
             )}
+
+            {/* Política de Cancelación */}
+            <div className="cancellation-policy mt-4 p-4 bg-gray-50 rounded-xl">
+              <h4 className="font-bold text-gray-900 mb-2">Política de Cancelación</h4>
+              <p className="text-sm text-gray-600">
+                {tour.cancellation_policy || `Cancelación gratuita hasta ${tour.cancellation_hours} horas antes del inicio del tour.`}
+              </p>
+            </div>
           </div>
         </div>
       </div>

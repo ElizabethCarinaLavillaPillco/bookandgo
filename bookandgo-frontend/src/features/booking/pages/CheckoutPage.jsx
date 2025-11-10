@@ -5,10 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
   CreditCard, 
   Lock, 
-  AlertCircle, 
-  CheckCircle,
+  AlertCircle,
   Loader2,
-  ShoppingBag,
   Calendar,
   Users
 } from 'lucide-react';
@@ -18,7 +16,7 @@ import api from '../../../shared/utils/api';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { items, total, clearCart } = useCartStore();
+  const { items, clearCart, getTotal } = useCartStore();
   const { user } = useAuthStore();
   
   const [loading, setLoading] = useState(false);
@@ -32,20 +30,20 @@ const CheckoutPage = () => {
     cvv: '',
   });
 
+  const total = getTotal();
+
   useEffect(() => {
     if (items.length === 0) {
       navigate('/cart');
     }
-  }, [items, navigate]);
+  }, [items.length, navigate]);
 
-  // Formatear número de tarjeta
   const formatCardNumber = (value) => {
     const cleaned = value.replace(/\s/g, '');
     const formatted = cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
-    return formatted.slice(0, 19); // 16 dígitos + 3 espacios
+    return formatted.slice(0, 19);
   };
 
-  // Formatear fecha de expiración
   const formatExpiryDate = (value) => {
     const cleaned = value.replace(/\D/g, '');
     if (cleaned.length >= 2) {
@@ -103,22 +101,24 @@ const CheckoutPage = () => {
       // Simular procesamiento de pago (2 segundos)
       await new Promise(resolve => setTimeout(resolve, 2000));
 
+      console.log('Creating bookings...', items); // Debug
+
       // Crear bookings en el backend
       const bookingPromises = items.map(item => 
         api.post('/bookings', {
           tour_id: item.tour_id,
           booking_date: item.date,
           adults: item.adults,
-          children: item.children,
-          infants: item.infants,
-          special_requests: item.special_requests,
+          children: item.children || 0,
+          infants: item.infants || 0,
+          special_requests: item.special_requests || '',
           total_price: item.total_price,
           payment_method: paymentMethod,
-          payment_status: 'completed',
         })
       );
 
-      await Promise.all(bookingPromises);
+      const responses = await Promise.all(bookingPromises);
+      console.log('Bookings created:', responses); // Debug
 
       // Limpiar carrito
       clearCart();
@@ -144,7 +144,7 @@ const CheckoutPage = () => {
     if (cleaned.startsWith('4')) return 'Visa';
     if (cleaned.startsWith('5')) return 'Mastercard';
     if (cleaned.startsWith('3')) return 'American Express';
-    return 'Card';
+    return 'Tarjeta';
   };
 
   if (items.length === 0) {
@@ -168,7 +168,6 @@ const CheckoutPage = () => {
               </h2>
 
               <div className="space-y-4">
-                {/* Tarjeta de Crédito/Débito */}
                 <label className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-primary transition-all">
                   <input
                     type="radio"
@@ -184,7 +183,6 @@ const CheckoutPage = () => {
                   </span>
                 </label>
 
-                {/* PayPal (simulado) */}
                 <label className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-primary transition-all">
                   <input
                     type="radio"
@@ -353,7 +351,7 @@ const CheckoutPage = () => {
                   <div key={index} className="space-y-2">
                     <div className="flex gap-3">
                       <img
-                        src={item.tour_image}
+                        src={item.tour_image || 'https://via.placeholder.com/100'}
                         alt={item.tour_title}
                         className="w-16 h-16 rounded-lg object-cover"
                       />
@@ -364,7 +362,7 @@ const CheckoutPage = () => {
                       </div>
                     </div>
                     
-                    <div className="text-xs text-gray-600 space-y-1 ml-19">
+                    <div className="text-xs text-gray-600 space-y-1">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {new Date(item.date).toLocaleDateString('es-PE', { 
@@ -383,7 +381,7 @@ const CheckoutPage = () => {
 
                     <div className="text-right">
                       <span className="font-bold text-gray-900">
-                        S/. {item.total_price.toFixed(2)}
+                        S/. {parseFloat(item.total_price).toFixed(2)}
                       </span>
                     </div>
                   </div>

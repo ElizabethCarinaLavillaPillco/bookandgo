@@ -51,11 +51,11 @@ const BookingPage = () => {
     }
   };
 
-  const totalGuests = bookingData.adults + bookingData.children + bookingData.infants;
+  const totalGuests = bookingData.adults + bookingData.children;
   
   const calculatePrice = () => {
     if (!tour) return 0;
-    const basePrice = tour.discount_price || tour.price;
+    const basePrice = parseFloat(tour.discount_price || tour.price);
     // Adultos: precio completo, Niños: 50%, Infantes: gratis
     const total = (basePrice * bookingData.adults) + (basePrice * 0.5 * bookingData.children);
     return total;
@@ -91,10 +91,11 @@ const BookingPage = () => {
       children: bookingData.children,
       infants: bookingData.infants,
       special_requests: bookingData.specialRequests,
-      price_per_adult: tour.discount_price || tour.price,
+      price_per_adult: parseFloat(tour.discount_price || tour.price),
       total_price: calculatePrice(),
     };
 
+    console.log('Adding to cart:', cartItem); // Debug
     addItem(cartItem);
     navigate('/cart');
   };
@@ -124,13 +125,15 @@ const BookingPage = () => {
     );
   }
 
+  const basePrice = parseFloat(tour.discount_price || tour.price);
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container-custom max-w-6xl">
         {/* Breadcrumb */}
         <button
           onClick={() => navigate(`/tours/${id}`)}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 font-semibold"
         >
           <ArrowLeft className="w-5 h-5" />
           Volver al tour
@@ -146,7 +149,7 @@ const BookingPage = () => {
 
               {/* Error */}
               {error && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6">
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6 animate-fade-in">
                   <div className="flex items-start gap-3">
                     <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                     <p className="text-red-700 text-sm">{error}</p>
@@ -162,7 +165,10 @@ const BookingPage = () => {
                 </label>
                 <DateSelector
                   value={bookingData.date}
-                  onChange={(date) => setBookingData({ ...bookingData, date })}
+                  onChange={(date) => {
+                    setBookingData({ ...bookingData, date });
+                    setError(null); // Limpiar error al seleccionar fecha
+                  }}
                   minDate={new Date()}
                 />
               </div>
@@ -179,9 +185,17 @@ const BookingPage = () => {
                   infants={bookingData.infants}
                   minPeople={tour.min_people}
                   maxPeople={tour.max_people}
-                  onAdultsChange={(adults) => setBookingData({ ...bookingData, adults })}
-                  onChildrenChange={(children) => setBookingData({ ...bookingData, children })}
-                  onInfantsChange={(infants) => setBookingData({ ...bookingData, infants })}
+                  onAdultsChange={(adults) => {
+                    setBookingData({ ...bookingData, adults });
+                    setError(null);
+                  }}
+                  onChildrenChange={(children) => {
+                    setBookingData({ ...bookingData, children });
+                    setError(null);
+                  }}
+                  onInfantsChange={(infants) => {
+                    setBookingData({ ...bookingData, infants });
+                  }}
                 />
                 <p className="text-sm text-gray-600 mt-2">
                   Capacidad: {tour.min_people} - {tour.max_people} personas
@@ -209,9 +223,10 @@ const BookingPage = () => {
                 <div className="flex items-center gap-3 text-gray-700">
                   <Clock className="w-5 h-5 text-primary" />
                   <span>
-                    Duración: {tour.duration_days > 0 && `${tour.duration_days} día${tour.duration_days > 1 ? 's' : ''}`}
-                    {tour.duration_days > 0 && tour.duration_hours > 0 && ' y '}
-                    {tour.duration_hours > 0 && `${tour.duration_hours} hora${tour.duration_hours > 1 ? 's' : ''}`}
+                    Duración: 
+                    {tour.duration_days > 0 && ` ${tour.duration_days} día${tour.duration_days > 1 ? 's' : ''}`}
+                    {tour.duration_days > 0 && tour.duration_hours > 0 && ' y'}
+                    {tour.duration_hours > 0 && ` ${tour.duration_hours} hora${tour.duration_hours > 1 ? 's' : ''}`}
                   </span>
                 </div>
 
@@ -222,7 +237,13 @@ const BookingPage = () => {
 
                 <div className="flex items-center gap-3 text-gray-700">
                   <Users className="w-5 h-5 text-primary" />
-                  <span>Nivel: {tour.difficulty_level === 'easy' ? 'Fácil' : tour.difficulty_level === 'moderate' ? 'Moderado' : 'Difícil'}</span>
+                  <span>
+                    Dificultad: {
+                      tour.difficulty_level === 'easy' ? 'Fácil' : 
+                      tour.difficulty_level === 'moderate' ? 'Moderado' : 
+                      'Difícil'
+                    }
+                  </span>
                 </div>
               </div>
             </div>
@@ -233,7 +254,7 @@ const BookingPage = () => {
             <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
               {/* Imagen del Tour */}
               <img
-                src={tour.featured_image}
+                src={tour.featured_image || 'https://via.placeholder.com/400x300'}
                 alt={tour.title}
                 className="w-full h-48 object-cover rounded-xl mb-4"
               />
@@ -245,27 +266,31 @@ const BookingPage = () => {
               {/* Desglose de Precios */}
               <div className="space-y-3 mb-6 pb-6 border-b border-gray-200">
                 {bookingData.adults > 0 && (
-                  <div className="flex justify-between text-gray-700">
-                    <span>S/. {(tour.discount_price || tour.price).toFixed(2)} x {bookingData.adults} adulto{bookingData.adults > 1 ? 's' : ''}</span>
+                  <div className="flex justify-between text-gray-700 text-sm">
+                    <span>
+                      S/. {basePrice.toFixed(2)} x {bookingData.adults} adulto{bookingData.adults > 1 ? 's' : ''}
+                    </span>
                     <span className="font-semibold">
-                      S/. {((tour.discount_price || tour.price) * bookingData.adults).toFixed(2)}
+                      S/. {(basePrice * bookingData.adults).toFixed(2)}
                     </span>
                   </div>
                 )}
                 
                 {bookingData.children > 0 && (
-                  <div className="flex justify-between text-gray-700">
-                    <span>S/. {((tour.discount_price || tour.price) * 0.5).toFixed(2)} x {bookingData.children} niño{bookingData.children > 1 ? 's' : ''}</span>
+                  <div className="flex justify-between text-gray-700 text-sm">
+                    <span>
+                      S/. {(basePrice * 0.5).toFixed(2)} x {bookingData.children} niño{bookingData.children > 1 ? 's' : ''}
+                    </span>
                     <span className="font-semibold">
-                      S/. {((tour.discount_price || tour.price) * 0.5 * bookingData.children).toFixed(2)}
+                      S/. {(basePrice * 0.5 * bookingData.children).toFixed(2)}
                     </span>
                   </div>
                 )}
 
                 {bookingData.infants > 0 && (
-                  <div className="flex justify-between text-gray-700">
+                  <div className="flex justify-between text-gray-700 text-sm">
                     <span>{bookingData.infants} infante{bookingData.infants > 1 ? 's' : ''}</span>
-                    <span className="font-semibold">Gratis</span>
+                    <span className="font-semibold text-green-600">Gratis</span>
                   </div>
                 )}
               </div>
@@ -281,7 +306,7 @@ const BookingPage = () => {
               {/* Botón Agregar al Carrito */}
               <button
                 onClick={handleAddToCart}
-                disabled={!bookingData.date}
+                disabled={!bookingData.date || loading}
                 className="w-full flex items-center justify-center gap-2 bg-gradient-primary hover:bg-gradient-secondary text-gray-900 font-bold px-6 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ShoppingCart className="w-5 h-5" />
@@ -289,7 +314,7 @@ const BookingPage = () => {
               </button>
 
               <p className="text-xs text-gray-500 text-center mt-4">
-                Política de cancelación gratuita hasta {tour.cancellation_hours} horas antes
+                Cancelación gratuita hasta {tour.cancellation_hours} horas antes
               </p>
             </div>
           </div>

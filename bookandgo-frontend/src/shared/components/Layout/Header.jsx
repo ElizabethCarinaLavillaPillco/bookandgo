@@ -112,7 +112,7 @@ const Header = () => {
                     Mi Perfil
                   </Link>
                   <Link
-                    to="/bookings"
+                    to="/profile/bookings"
                     className="block px-4 py-3 hover:bg-gray-50 transition-colors"
                   >
                     Mis Reservas
