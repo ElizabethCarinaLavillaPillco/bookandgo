@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { CheckCircle, Calendar, Download, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
+const { totalPaid, bookingsCount, paymentMethod } = location.state || {}; // 👈 Agregar paymentMethod
+
 
 const BookingSuccessPage = () => {
   const location = useLocation();
@@ -142,7 +144,11 @@ const BookingSuccessPage = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Método de pago:</span>
-                <span className="font-semibold text-gray-900">Tarjeta de crédito</span>
+                <span className="font-semibold text-gray-900">
+                  {paymentMethod === 'card' ? 'Tarjeta de crédito' : 
+                  paymentMethod === 'yape' ? 'Yape' : 
+                  paymentMethod === 'paypal' ? 'PayPal' : 'Tarjeta de crédito'}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Estado:</span>

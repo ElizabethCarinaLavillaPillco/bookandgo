@@ -1,5 +1,4 @@
 // src/App.jsx
-
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
@@ -141,7 +140,6 @@ function App() {
               } 
             />
 
-            {/* Customer Bookings */}
             <Route 
               path="profile/bookings" 
               element={
@@ -150,7 +148,6 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-
           </Route>
         </Routes>
       </BrowserRouter>
