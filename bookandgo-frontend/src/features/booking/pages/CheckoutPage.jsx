@@ -15,7 +15,9 @@ import useCartStore from '../../../store/cartStore';
 import useAuthStore from '../../../store/authStore';
 import api from '../../../shared/utils/api';
 import PayPalButton from '../components/PayPalButton';
-
+import YapeModal from '../components/YapeModal';
+import PlinModal from '../components/PlinModal';
+import MercadoPagoModal from '../components/MercadoPagoModal';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -27,6 +29,11 @@ const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState('card');
   const isProcessingPayment = useRef(false);
   
+  // Modales
+  const [showYapeModal, setShowYapeModal] = useState(false);
+  const [showPlinModal, setShowPlinModal] = useState(false);
+  const [showMercadoPagoModal, setShowMercadoPagoModal] = useState(false);
+  
   const [cardData, setCardData] = useState({
     cardNumber: '',
     cardName: '',
@@ -34,13 +41,8 @@ const CheckoutPage = () => {
     cvv: '',
   });
 
-  const [yapeData, setYapeData] = useState({
-    phoneNumber: '',
-    name: '',
-  });
-
   const total = getTotal();
-  const totalUSD = (total / 3.75).toFixed(2); // Conversión aproximada PEN a USD
+  const totalUSD = (total / 3.75).toFixed(2);
 
   useEffect(() => {
     if (items.length === 0 && !isProcessingPayment.current) {
@@ -62,11 +64,6 @@ const CheckoutPage = () => {
     return cleaned;
   };
 
-  const formatPhoneNumber = (value) => {
-    const cleaned = value.replace(/\D/g, '');
-    return cleaned.slice(0, 9);
-  };
-
   const handleCardNumberChange = (e) => {
     const formatted = formatCardNumber(e.target.value);
     setCardData({ ...cardData, cardNumber: formatted });
@@ -75,11 +72,6 @@ const CheckoutPage = () => {
   const handleExpiryChange = (e) => {
     const formatted = formatExpiryDate(e.target.value);
     setCardData({ ...cardData, expiryDate: formatted });
-  };
-
-  const handlePhoneChange = (e) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setYapeData({ ...yapeData, phoneNumber: formatted });
   };
 
   const validateCard = () => {
@@ -105,22 +97,7 @@ const CheckoutPage = () => {
     return errors;
   };
 
-  const validateYape = () => {
-    const errors = [];
-    
-    if (yapeData.phoneNumber.length !== 9) {
-      errors.push('Número de celular debe tener 9 dígitos');
-    }
-
-    if (!yapeData.name.trim()) {
-      errors.push('Nombre es requerido');
-    }
-
-    return errors;
-  };
-
-  // 👇 FUNCIÓN COMÚN PARA CREAR BOOKINGS
-  const createBookings = async (paymentMethodUsed) => {
+  const createBookings = async (paymentMethodUsed, paymentDetails = {}) => {
     console.log('Creating bookings...', items);
 
     const bookingPromises = items.map(item => 
@@ -133,6 +110,7 @@ const CheckoutPage = () => {
         special_requests: item.special_requests || '',
         total_price: item.total_price,
         payment_method: paymentMethodUsed,
+        payment_details: JSON.stringify(paymentDetails),
       })
     );
 
@@ -142,12 +120,12 @@ const CheckoutPage = () => {
     return responses;
   };
 
-  // 👇 FUNCIÓN COMÚN PARA COMPLETAR PAGO
-  const completePayment = (paymentMethodUsed) => {
+  const completePayment = (paymentMethodUsed, paymentDetails = {}) => {
     const paymentData = {
       totalPaid: total,
       bookingsCount: items.length,
       paymentMethod: paymentMethodUsed,
+      ...paymentDetails,
     };
 
     clearCart();
@@ -162,12 +140,7 @@ const CheckoutPage = () => {
     setError(null);
     isProcessingPayment.current = true;
 
-    let validationErrors = [];
-    if (paymentMethod === 'card') {
-      validationErrors = validateCard();
-    } else if (paymentMethod === 'yape') {
-      validationErrors = validateYape();
-    }
+    const validationErrors = validateCard();
 
     if (validationErrors.length > 0) {
       setError(validationErrors.join(', '));
@@ -179,8 +152,8 @@ const CheckoutPage = () => {
 
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      await createBookings(paymentMethod);
-      completePayment(paymentMethod);
+      await createBookings('card', { cardLast4: cardData.cardNumber.slice(-4) });
+      completePayment('card');
     } catch (err) {
       console.error('Error processing payment:', err);
       setError(err.response?.data?.message || 'Error al procesar el pago. Por favor intenta de nuevo.');
@@ -190,21 +163,56 @@ const CheckoutPage = () => {
     }
   };
 
-  // 👇 HANDLER PARA PAYPAL
   const handlePayPalSuccess = async (details) => {
     setLoading(true);
     isProcessingPayment.current = true;
 
     try {
       console.log('PayPal payment details:', details);
-      await createBookings('paypal');
-      completePayment('paypal');
+      await createBookings('paypal', { transactionId: details.id });
+      completePayment('paypal', { transactionId: details.id });
     } catch (err) {
       console.error('Error processing PayPal payment:', err);
       setError('Error al procesar el pago con PayPal');
       isProcessingPayment.current = false;
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleYapeSuccess = async (details) => {
+    isProcessingPayment.current = true;
+    try {
+      await createBookings('yape', details);
+      completePayment('yape', details);
+    } catch (err) {
+      console.error('Error processing Yape payment:', err);
+      setError('Error al procesar el pago con Yape');
+      isProcessingPayment.current = false;
+    }
+  };
+
+  const handlePlinSuccess = async (details) => {
+    isProcessingPayment.current = true;
+    try {
+      await createBookings('plin', details);
+      completePayment('plin', details);
+    } catch (err) {
+      console.error('Error processing Plin payment:', err);
+      setError('Error al procesar el pago con Plin');
+      isProcessingPayment.current = false;
+    }
+  };
+
+  const handleMercadoPagoSuccess = async (details) => {
+    isProcessingPayment.current = true;
+    try {
+      await createBookings('mercadopago', details);
+      completePayment('mercadopago', details);
+    } catch (err) {
+      console.error('Error processing Mercado Pago payment:', err);
+      setError('Error al procesar el pago con Mercado Pago');
+      isProcessingPayment.current = false;
     }
   };
 
@@ -277,7 +285,49 @@ const CheckoutPage = () => {
                   </div>
                   <div className="flex-1">
                     <span className="font-semibold text-gray-900">Yape</span>
-                    <p className="text-xs text-gray-600">Billetera digital - Perú</p>
+                    <p className="text-xs text-gray-600">BCP - Billetera digital</p>
+                  </div>
+                </label>
+
+                {/* Plin */}
+                <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                  paymentMethod === 'plin' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary'
+                }`}>
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="plin"
+                    checked={paymentMethod === 'plin'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-5 h-5 text-primary"
+                  />
+                  <div className="w-6 h-6 bg-cyan-500 rounded flex items-center justify-center">
+                    <Smartphone className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-semibold text-gray-900">Plin</span>
+                    <p className="text-xs text-gray-600">Pago móvil multibanco</p>
+                  </div>
+                </label>
+
+                {/* Mercado Pago */}
+                <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                  paymentMethod === 'mercadopago' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary'
+                }`}>
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="mercadopago"
+                    checked={paymentMethod === 'mercadopago'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-5 h-5 text-primary"
+                  />
+                  <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center text-white font-bold text-xs">
+                    MP
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-semibold text-gray-900">Mercado Pago</span>
+                    <p className="text-xs text-gray-600">Paga seguro y en cuotas</p>
                   </div>
                 </label>
 
@@ -416,71 +466,73 @@ const CheckoutPage = () => {
               </div>
             )}
 
-            {/* Formulario Yape */}
+            {/* Botón Yape */}
             {paymentMethod === 'yape' && (
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">
                   Pago con Yape
                 </h2>
 
-                <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-6 mb-6 text-white text-center">
+                <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-8 text-white text-center mb-6">
                   <Smartphone className="w-16 h-16 mx-auto mb-4" />
                   <h3 className="text-2xl font-bold mb-2">Yape</h3>
-                  <p className="text-purple-200 text-sm">Billetera digital</p>
+                  <p className="text-purple-200 text-sm">BCP - Billetera digital</p>
                 </div>
 
-                {error && (
-                  <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <p className="text-red-700 text-sm">{error}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Número de Celular
-                    </label>
-                    <div className="flex gap-2">
-                      <div className="px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 font-mono">
-                        +51
-                      </div>
-                      <input
-                        type="text"
-                        value={yapeData.phoneNumber}
-                        onChange={handlePhoneChange}
-                        placeholder="987654321"
-                        className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none font-mono"
-                        maxLength="9"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Nombre Completo
-                    </label>
-                    <input
-                      type="text"
-                      value={yapeData.name}
-                      onChange={(e) => setYapeData({ ...yapeData, name: e.target.value })}
-                      placeholder="Juan Pérez García"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-6 bg-purple-50 rounded-xl p-4">
-                  <p className="text-sm text-purple-900">
-                    <strong>Nota:</strong> Recibirás una notificación en tu app de Yape para confirmar el pago.
-                  </p>
-                </div>
+                <button
+                  onClick={() => setShowYapeModal(true)}
+                  className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 rounded-xl transition-all"
+                >
+                  Continuar con Yape
+                </button>
               </div>
             )}
 
-            {/* PayPal REAL */}
+            {/* Botón Plin */}
+            {paymentMethod === 'plin' && (
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">
+                  Pago con Plin
+                </h2>
+
+                <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl p-8 text-white text-center mb-6">
+                  <Smartphone className="w-16 h-16 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold mb-2">Plin</h3>
+                  <p className="text-cyan-100 text-sm">Pago móvil multibanco</p>
+                </div>
+
+                <button
+                  onClick={() => setShowPlinModal(true)}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-4 rounded-xl transition-all"
+                >
+                  Continuar con Plin
+                </button>
+              </div>
+            )}
+
+            {/* Botón Mercado Pago */}
+            {paymentMethod === 'mercadopago' && (
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">
+                  Pago con Mercado Pago
+                </h2>
+
+                <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl p-8 text-white text-center mb-6">
+                  <CreditCard className="w-16 h-16 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold mb-2">Mercado Pago</h3>
+                  <p className="text-blue-100 text-sm">Tu dinero seguro</p>
+                </div>
+
+                <button
+                  onClick={() => setShowMercadoPagoModal(true)}
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 rounded-xl transition-all"
+                >
+                  Continuar con Mercado Pago
+                </button>
+              </div>
+            )}
+
+            {/* PayPal */}
             {paymentMethod === 'paypal' && (
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">
@@ -502,7 +554,6 @@ const CheckoutPage = () => {
                   </p>
                 </div>
 
-                {/* 👇 BOTONES DE PAYPAL REALES */}
                 <PayPalButton
                   amount={parseFloat(totalUSD)}
                   onSuccess={handlePayPalSuccess}
@@ -586,8 +637,8 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              {/* Botón de Pago (Solo para Card y Yape) */}
-              {(paymentMethod === 'card' || paymentMethod === 'yape') && (
+              {/* Botón de Pago (Solo para Card) */}
+              {paymentMethod === 'card' && (
                 <button
                   onClick={handlePayment}
                   disabled={loading}
@@ -613,6 +664,12 @@ const CheckoutPage = () => {
                 </p>
               )}
 
+              {(paymentMethod === 'yape' || paymentMethod === 'plin' || paymentMethod === 'mercadopago') && (
+                <p className="text-sm text-gray-600 text-center">
+                  Haz clic en el botón arriba para continuar con el pago
+                </p>
+              )}
+
               <p className="text-xs text-gray-500 text-center mt-4">
                 {paymentMethod === 'paypal' 
                   ? '✓ PayPal Sandbox - Usa tu cuenta de prueba' 
@@ -622,6 +679,28 @@ const CheckoutPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Modales */}
+      <YapeModal
+        isOpen={showYapeModal}
+        onClose={() => setShowYapeModal(false)}
+        amount={total}
+        onSuccess={handleYapeSuccess}
+      />
+
+      <PlinModal
+        isOpen={showPlinModal}
+        onClose={() => setShowPlinModal(false)}
+        amount={total}
+        onSuccess={handlePlinSuccess}
+      />
+
+      <MercadoPagoModal
+        isOpen={showMercadoPagoModal}
+        onClose={() => setShowMercadoPagoModal(false)}
+        amount={total}
+        onSuccess={handleMercadoPagoSuccess}
+      />
     </div>
   );
 };
