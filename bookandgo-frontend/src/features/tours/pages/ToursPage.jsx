@@ -1,8 +1,8 @@
-// src/features/tours/pages/ToursPage.jsx (COMPLETO)
+// src/features/tours/pages/ToursPage.jsx
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, MapPin, Filter } from 'lucide-react';
 import TourCard from '../components/TourCard';
 import SearchBar from '../components/SearchBar';
 import FilterSidebar from '../components/FilterSidebar';
@@ -147,7 +147,7 @@ const ToursPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Barra de búsqueda superior */}
-      <div className="bg-white border-b sticky top-20 z-40">
+      <div className="bg-white border-b sticky top-20 z-40 shadow-sm">
         <div className="container-custom py-4">
           <SearchBar
             filters={filters}
@@ -174,60 +174,65 @@ const ToursPage = () => {
           {/* Contenido Principal */}
           <div className="flex-1">
             {/* Header con resultados y botón de filtros móvil */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-3xl font-black text-gray-900 mb-2">
+                <h1 className="text-3xl font-black text-gray-900 mb-2 flex items-center gap-2">
+                  {filters.location && <MapPin className="w-6 h-6 text-yellow-500" />}
                   {filters.location || 'Todas las atracciones'}
                 </h1>
                 <p className="text-gray-600">
-                  {loading ? 'Cargando...' : `${pagination.total} experiencias encontradas`}
+                  {loading ? 'Cargando...' : (
+                    <span>
+                      <span className="font-semibold">{pagination.total}</span> experiencias encontradas
+                    </span>
+                  )}
                 </p>
               </div>
 
               {/* Botón filtros móvil */}
               <button
                 onClick={() => setShowFilters(true)}
-                className="lg:hidden flex items-center gap-2 bg-white border-2 border-gray-300 px-4 py-2 rounded-lg hover:border-primary transition-colors"
+                className="lg:hidden flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all shadow-md"
               >
-                <SlidersHorizontal className="w-5 h-5" />
+                <Filter className="w-5 h-5" />
                 Filtros
               </button>
             </div>
 
             {/* Filtros activos */}
             {Object.values(filters).some(v => v && v !== 'created_at') && (
-              <div className="flex items-center gap-2 mb-6 flex-wrap">
+              <div className="flex flex-wrap items-center gap-2 mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                 <span className="text-sm font-semibold text-gray-700">Filtros activos:</span>
                 {filters.search && (
-                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2">
+                  <span className="px-3 py-1 bg-white text-yellow-700 rounded-full text-sm flex items-center gap-2 border border-yellow-300">
                     Búsqueda: {filters.search}
                     <button 
                       onClick={() => {
                         handleFilterChange('search', '');
                         applyFilters();
                       }}
-                      className="hover:text-primary-dark"
+                      className="hover:text-yellow-900"
                     >
                       ×
                     </button>
                   </span>
                 )}
                 {filters.location && (
-                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2">
+                  <span className="px-3 py-1 bg-white text-yellow-700 rounded-full text-sm flex items-center gap-2 border border-yellow-300">
                     Ubicación: {filters.location}
                     <button 
                       onClick={() => {
                         handleFilterChange('location', '');
                         applyFilters();
                       }}
-                      className="hover:text-primary-dark"
+                      className="hover:text-yellow-900"
                     >
                       ×
                     </button>
                   </span>
                 )}
                 {(filters.minPrice || filters.maxPrice) && (
-                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2">
+                  <span className="px-3 py-1 bg-white text-yellow-700 rounded-full text-sm flex items-center gap-2 border border-yellow-300">
                     S/. {filters.minPrice || '0'} - {filters.maxPrice || '∞'}
                     <button 
                       onClick={() => {
@@ -235,49 +240,49 @@ const ToursPage = () => {
                         handleFilterChange('maxPrice', '');
                         applyFilters();
                       }}
-                      className="hover:text-primary-dark"
+                      className="hover:text-yellow-900"
                     >
                       ×
                     </button>
                   </span>
                 )}
                 {filters.category && (
-                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2">
+                  <span className="px-3 py-1 bg-white text-yellow-700 rounded-full text-sm flex items-center gap-2 border border-yellow-300">
                     Categoría
                     <button 
                       onClick={() => {
                         handleFilterChange('category', '');
                         applyFilters();
                       }}
-                      className="hover:text-primary-dark"
+                      className="hover:text-yellow-900"
                     >
                       ×
                     </button>
                   </span>
                 )}
                 {filters.rating && (
-                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2">
+                  <span className="px-3 py-1 bg-white text-yellow-700 rounded-full text-sm flex items-center gap-2 border border-yellow-300">
                     Rating: {filters.rating}⭐+
                     <button 
                       onClick={() => {
                         handleFilterChange('rating', '');
                         applyFilters();
                       }}
-                      className="hover:text-primary-dark"
+                      className="hover:text-yellow-900"
                     >
                       ×
                     </button>
                   </span>
                 )}
                 {filters.duration && (
-                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2">
+                  <span className="px-3 py-1 bg-white text-yellow-700 rounded-full text-sm flex items-center gap-2 border border-yellow-300">
                     Duración
                     <button 
                       onClick={() => {
                         handleFilterChange('duration', '');
                         applyFilters();
                       }}
-                      className="hover:text-primary-dark"
+                      className="hover:text-yellow-900"
                     >
                       ×
                     </button>
@@ -322,7 +327,7 @@ const ToursPage = () => {
                     {pagination.currentPage < pagination.lastPage ? (
                       <button 
                         onClick={handleLoadMore}
-                        className="bg-gradient-primary hover:bg-gradient-secondary text-gray-900 font-bold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl"
+                        className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-bold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl"
                       >
                         Ver más ({pagination.total - tours.length} restantes)
                       </button>
@@ -347,7 +352,7 @@ const ToursPage = () => {
                 </p>
                 <button
                   onClick={clearFilters}
-                  className="bg-gradient-primary text-gray-900 font-bold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl"
+                  className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl"
                 >
                   Limpiar filtros
                 </button>
@@ -361,26 +366,14 @@ const ToursPage = () => {
       {showFilters && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden">
           <div className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-white shadow-2xl overflow-y-auto animate-slide-in">
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
-              <h3 className="text-xl font-bold">Filtros</h3>
-              <button
-                onClick={() => setShowFilters(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <div className="p-6">
-              <FilterSidebar
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                onApply={() => {
-                  applyFilters();
-                  setShowFilters(false);
-                }}
-                onClear={clearFilters}
-              />
-            </div>
+            <FilterSidebar
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onApply={applyFilters}
+              onClear={clearFilters}
+              isMobile={true}
+              onClose={() => setShowFilters(false)}
+            />
           </div>
         </div>
       )}

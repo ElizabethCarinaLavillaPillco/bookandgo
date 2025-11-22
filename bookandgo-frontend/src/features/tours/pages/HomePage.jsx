@@ -1,3 +1,5 @@
+// src/features/tours/pages/HomePage.jsx
+
 import HeroSection from '../components/HeroSection';
 import WhyUsSection from '../components/WhyUsSection';
 import CTASection from '../components/CTASection';

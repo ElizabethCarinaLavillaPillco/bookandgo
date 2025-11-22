@@ -44,28 +44,32 @@ const PayPalButton = ({ amount, onSuccess, onError }) => {
   };
 
   return (
-    <div>
+    <div className="w-full">
       {error && (
         <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-4">
           <p className="text-red-700 text-sm">{error}</p>
         </div>
       )}
       
-      <PayPalButtons
-        createOrder={createOrder}
-        onApprove={onApprove}
-        onError={onErrorHandler}
-        onCancel={() => {
-          console.log('Payment cancelled');
-        }}
-        style={{
-          layout: 'vertical',
-          color: 'gold',
-          shape: 'rect',
-          label: 'paypal',
-          height: 45,
-        }}
-      />
+      <div className="paypal-buttons-wrapper">
+        <PayPalButtons
+          createOrder={createOrder}
+          onApprove={onApprove}
+          onError={onErrorHandler}
+          onCancel={() => {
+            console.log('Payment cancelled');
+          }}
+          style={{
+            layout: 'vertical',
+            color: 'gold',
+            shape: 'rect',
+            label: 'paypal',
+            height: 45,
+          }}
+          fundingSource={undefined}
+          forceReRender={[amount, error]}
+        />
+      </div>
     </div>
   );
 };

@@ -1,231 +1,261 @@
-/* src/App.css */
+/* ====================================================
+   CORRECCIONES DE ESPACIADO - APLICAR AL INICIO
+   ==================================================== */
 
-/* --------------------------------------------------
-   1. Variables CSS – Paleta ampliada Tailwind
-   -------------------------------------------------- */
-:root {
-  /* Amarillos */
-  --yellow-300: #fde047;
-  --yellow-400: #facc15;
-  --yellow-500: #eab308; /* nuevo color-base amarillo */
-  --yellow-600: #ca8a04;
-
-  /* Ámbares */
-  --amber-300: #fcd34d;
-  --amber-400: #fbbf24;
-  --amber-500: #f59e0b;
-
-  /* Naranjas */
-  --orange-300: #fdba74;
-  --orange-400: #fb923c;
-  --orange-500: #f97316; /* nuevo color-base naranja */
-  --orange-600: #ea580c;
-
-  /* Rojos (acento cálido) */
-  --red-400: #f87171;
-  --red-500: #ef4444;
-
-  /* Neutros */
-  --white: #ffffff;
-  --slate-50: #f8fafc;
-  --slate-100: #f1f5f9;
-  --slate-200: #e2e8f0;
-  --slate-300: #cbd5e1;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-
-  /* Acentos fríos / cálidos adicionales */
-  --lime-300: #bef264;
-  --lime-400: #a3e635;
-  --emerald-300: #6ee7b7;
-  --emerald-400: #34d399;
-  --rose-300: #fda4af;
-  --rose-400: #fb7185;
-
-  /* ------------------------------------------------
-     Mapeo a tus nombres originales (sin romper nada)
-     ------------------------------------------------ */
-  --color-primary: var(--yellow-500);
-  --color-primary-dark: var(--amber-500);
-  --color-primary-light: var(--yellow-300);
-  --color-secondary: var(--orange-500);
-  --color-secondary-dark: var(--orange-600);
-
-  --text-default: #111827; /* text-gray-900 */
-  --muted: #6b7280;        /* text-gray-500 */
-}
-
-/* --------------------------------------------------
-   2. Tipografía base
-   -------------------------------------------------- */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
-
+/* 1. Resetear body para quitar espacios blancos */
 body {
   font-family: "Montserrat", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   background: var(--white);
   color: var(--text-default);
-  margin: 0;
+  margin: 0; /* ✅ Eliminar margen */
+  padding: 0; /* ✅ Eliminar padding */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* --------------------------------------------------
-   3. Layout
-   -------------------------------------------------- */
+/* 2. Resetear márgenes del root */
+html {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 3. Aplicar box-sizing a todos los elementos */
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* 4. Contenedor principal con márgenes consistentes */
 .container-custom {
+  width: 100%;
+  max-width: 1280px;
   margin-left: auto;
   margin-right: auto;
+  padding-left: 1rem;  /* 16px en móvil */
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-custom { 
+    padding-left: 1.5rem;  /* 24px en tablet */
+    padding-right: 1.5rem; 
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-custom { 
+    padding-left: 2rem;  /* 32px en desktop */
+    padding-right: 2rem; 
+  }
+}
+
+/* 5. Secciones con espaciado vertical consistente */
+.section {
+  padding-top: 3rem;    /* 48px */
+  padding-bottom: 3rem;
+}
+
+.section-sm {
+  padding-top: 2rem;    /* 32px */
+  padding-bottom: 2rem;
+}
+
+.section-lg {
+  padding-top: 4rem;    /* 64px */
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 1024px) {
+  .section {
+    padding-top: 4rem;    /* 64px en desktop */
+    padding-bottom: 4rem;
+  }
+  
+  .section-sm {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+  
+  .section-lg {
+    padding-top: 6rem;    /* 96px en desktop */
+    padding-bottom: 6rem;
+  }
+}
+
+/* 6. Fondos de sección sin espacios */
+.section-bg {
+  margin-left: 0;
+  margin-right: 0;
+  width: 100%;
+}
+
+.section-bg.bg-gray {
+  background-color: var(--slate-50);
+}
+
+.section-bg.bg-white {
+  background-color: var(--white);
+}
+
+/* 7. Layout para páginas internas */
+.page-wrapper {
+  min-height: calc(100vh - 80px); /* Altura mínima menos header */
+  background: var(--slate-50);
+  padding: 2rem 0;
+}
+
+@media (min-width: 1024px) {
+  .page-wrapper {
+    padding: 3rem 0;
+  }
+}
+
+/* 8. Grid con márgenes apropiados */
+.grid-container {
+  display: grid;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .grid-container {
+    gap: 2rem;
+  }
+}
+
+/* ====================================================
+   EJEMPLO DE USO EN TUS COMPONENTES
+   ==================================================== */
+
+/* Para HomePage - Hero Section con fondo completo */
+.hero-section {
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  padding: 4rem 0;
+  background: linear-gradient(135deg, var(--yellow-300) 0%, var(--orange-500) 100%);
+}
+
+.hero-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .hero-content {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-content {
+    padding: 0 2rem;
+  }
+}
+
+/* Para secciones con contenido centrado */
+.content-section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .content-section {
+    padding: 3rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .content-section {
+    padding: 4rem 2rem;
+  }
+}
+
+/* ====================================================
+   CLASES UTILITARIAS PARA ESPACIADO
+   ==================================================== */
+
+/* Padding horizontal responsivo */
+.px-responsive {
   padding-left: 1rem;
   padding-right: 1rem;
 }
+
 @media (min-width: 640px) {
-  .container-custom { padding-left: 1.5rem; padding-right: 1.5rem; }
+  .px-responsive {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
 }
+
 @media (min-width: 1024px) {
-  .container-custom { padding-left: 2.5rem; padding-right: 2.5rem; }
+  .px-responsive {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 }
 
-/* --------------------------------------------------
-   4. Botones
-   -------------------------------------------------- */
-.btn-primary {
-  background: var(--color-primary);
-  color: var(--text-default);
-  font-weight: 700;
-  padding: 0.5rem 1.5rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-.btn-primary:hover {
-  background: var(--color-primary-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+/* Márgenes verticales */
+.my-section {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
 }
 
-.btn-secondary {
-  background: var(--color-secondary);
-  color: var(--white);
-  font-weight: 700;
-  padding: 0.5rem 1.5rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-.btn-secondary:hover {
-  background: var(--color-secondary-dark);
-  transform: translateY(-2px);
+.my-section-lg {
+  margin-top: 4rem;
+  margin-bottom: 4rem;
 }
 
-.btn-outline {
-  background: transparent;
-  border: 2px solid var(--color-primary);
-  color: var(--color-primary);
-  font-weight: 700;
-  padding: 0.5rem 1.5rem;
-  border-radius: 0.5rem;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-.btn-outline:hover {
-  background: var(--color-primary);
-  color: var(--text-default);
+@media (min-width: 1024px) {
+  .my-section {
+    margin-top: 4rem;
+    margin-bottom: 4rem;
+  }
+  
+  .my-section-lg {
+    margin-top: 6rem;
+    margin-bottom: 6rem;
+  }
 }
 
-/* --------------------------------------------------
-   5. Formularios
-   -------------------------------------------------- */
-.input-field {
-  width: 100%;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--gray-200);
-  border-radius: 0.5rem;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
-}
-.input-field:focus {
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.18); /* amarillo-500 alfa */
-  border-color: var(--color-primary);
+/* ====================================================
+   CORRECCIÓN DE PÁGINAS ESPECÍFICAS
+   ==================================================== */
+
+/* Cart Page */
+.cart-page {
+  padding: 2rem 0;
+  background: var(--slate-50);
+  min-height: 80vh;
 }
 
-/* --------------------------------------------------
-   6. Cards
-   -------------------------------------------------- */
-.card {
-  background: var(--white);
-  border-radius: 0.75rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-.card:hover {
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
-  transform: translateY(-4px);
+.cart-page .container-custom {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
-/* --------------------------------------------------
-   7. Badges
-   -------------------------------------------------- */
-.badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  border-radius: 9999px;
-}
-.badge-yellow { background: var(--color-primary); color: var(--text-default); }
-.badge-orange { background: var(--color-secondary); color: var(--white); }
-
-/* --------------------------------------------------
-   8. Gradientes (ampliados)
-   -------------------------------------------------- */
-.gradient-primary {
-  background: linear-gradient(135deg, var(--yellow-300) 0%, var(--orange-500) 100%);
-}
-.gradient-secondary {
-  background: linear-gradient(135deg, var(--amber-400) 0%, var(--orange-600) 100%);
+/* Checkout Page */
+.checkout-page-wrapper {
+  background-color: var(--slate-50);
+  padding: 3rem 0;
+  min-height: calc(100vh - 80px);
 }
 
-/* --------------------------------------------------
-   9. Animaciones
-   -------------------------------------------------- */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in { animation: fadeIn 0.5s ease-in both; }
-
-@keyframes slideIn {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-}
-.animate-slide-in { animation: slideIn 0.3s ease-out both; }
-
-/* --------------------------------------------------
-   10. Helpers rápidos
-   -------------------------------------------------- */
-.text-primary { color: var(--color-primary) !important; }
-.bg-primary { background: var(--color-primary) !important; }
-.bg-secondary { background: var(--color-secondary) !important; }
-
-/* --------------------------------------------------
-   11. Utilidad carrito
-   -------------------------------------------------- */
-.cart-badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  border-radius: 50%;
-  background: var(--color-secondary);
-  color: var(--white);
+@media (max-width: 768px) {
+  .checkout-page-wrapper {
+    padding: 2rem 0;
+  }
 }
 
-/* --------------------------------------------------
-   12. Imágenes responsive
-   -------------------------------------------------- */
-img { display: block; max-width: 100%; height: auto; }
+/* Tour Detail Page */
+.tour-detail-page {
+  padding: 2rem 0;
+  background: var(--slate-50);
+  min-height: 80vh;
+}
+
+.tour-detail-page .container-custom {
+  padding-top: 0;
+  padding-bottom: 0;
+}

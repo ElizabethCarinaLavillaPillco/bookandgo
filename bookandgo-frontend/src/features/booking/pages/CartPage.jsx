@@ -3,7 +3,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Calendar, Users, MapPin, Clock, Check, ShoppingBag, AlertCircle } from 'lucide-react';
 import useCartStore from '../../../store/cartStore';
-import './CartPage.css';
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -64,7 +63,7 @@ const CartPage = () => {
 
         {/* Alert de reserva */}
         <div className="cart-alert">
-          <Clock size={20} />
+          <Clock size={20} className="text-yellow-500" />
           <span>Completa tu reserva para asegurar tu lugar</span>
         </div>
 
@@ -87,11 +86,11 @@ const CartPage = () => {
 
                   <div className="item-info-list">
                     <div className="info-item">
-                      <Calendar size={16} />
+                      <Calendar size={16} className="text-yellow-500" />
                       <span>{formatDate(item.date)}</span>
                     </div>
                     <div className="info-item">
-                      <Users size={16} />
+                      <Users size={16} className="text-yellow-500" />
                       <span>
                         {item.adults} adulto{item.adults > 1 ? 's' : ''}
                         {item.children > 0 && `, ${item.children} niño${item.children > 1 ? 's' : ''}`}
@@ -100,7 +99,7 @@ const CartPage = () => {
                     </div>
                     {item.special_requests && (
                       <div className="info-item">
-                        <AlertCircle size={16} />
+                        <AlertCircle size={16} className="text-yellow-500" />
                         <span className="text-sm text-gray-600">
                           Solicitud especial: {item.special_requests}
                         </span>
@@ -161,7 +160,7 @@ const CartPage = () => {
               <div className="summary-total">
                 <span>Total</span>
                 <div className="total-price">
-                  <div className="price-big">S/. {total.toFixed(2)}</div>
+                  <div className="price-big text-yellow-500">S/. {total.toFixed(2)}</div>
                   <div className="price-note">Todos los cargos incluidos</div>
                 </div>
               </div>
@@ -195,19 +194,19 @@ const CartPage = () => {
                 <h4>¿Por qué reservar con nosotros?</h4>
                 <ul className="benefits-list">
                   <li>
-                    <Check size={16} />
+                    <Check size={16} className="text-yellow-500" />
                     Pago 100% seguro
                   </li>
                   <li>
-                    <Check size={16} />
+                    <Check size={16} className="text-yellow-500" />
                     Mejor precio garantizado
                   </li>
                   <li>
-                    <Check size={16} />
+                    <Check size={16} className="text-yellow-500" />
                     Atención al cliente 24/7
                   </li>
                   <li>
-                    <Check size={16} />
+                    <Check size={16} className="text-yellow-500" />
                     Confirmación instantánea
                   </li>
                 </ul>

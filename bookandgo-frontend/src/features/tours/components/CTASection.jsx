@@ -1,5 +1,7 @@
+// src/features/tours/components/CTASection.jsx
+
 import { Link } from 'react-router-dom';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, Star, Shield, Gift } from 'lucide-react';
 import useAuthStore from '../../../store/authStore';
 
 const CTASection = () => {
@@ -8,7 +10,7 @@ const CTASection = () => {
   if (isAuthenticated) return null;
 
   return (
-    <section className="py-20 bg-gradient-to-r from-primary via-accent-mustard to-secondary relative overflow-hidden">
+    <section className="py-20 bg-gradient-to-r from-yellow-400 via-orange-400 to-orange-500 relative overflow-hidden">
       {/* Decoraciones de fondo */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
@@ -49,19 +51,24 @@ const CTASection = () => {
           {/* Beneficios */}
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { emoji: '🎁', text: 'Ofertas exclusivas' },
-              { emoji: '⭐', text: 'Puntos de recompensa' },
-              { emoji: '📱', text: 'Gestión fácil y rápida' },
-            ].map((benefit, index) => (
-              <div
-                key={index}
-                className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-lg animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <span className="text-3xl mb-2 block">{benefit.emoji}</span>
-                <p className="font-semibold text-gray-900">{benefit.text}</p>
-              </div>
-            ))}
+              { icon: Gift, text: 'Ofertas exclusivas', color: 'from-yellow-400 to-orange-500' },
+              { icon: Star, text: 'Puntos de recompensa', color: 'from-blue-400 to-blue-600' },
+              { icon: Shield, text: 'Gestión fácil y rápida', color: 'from-green-400 to-green-600' },
+            ].map((benefit, index) => {
+              const Icon = benefit.icon;
+              return (
+                <div
+                  key={index}
+                  className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className={`w-12 h-12 bg-gradient-to-br ${benefit.color} rounded-full flex items-center justify-center mx-auto mb-3`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <p className="font-semibold text-gray-900">{benefit.text}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

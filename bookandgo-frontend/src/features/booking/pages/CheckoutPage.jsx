@@ -234,447 +234,456 @@ const CheckoutPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container-custom max-w-6xl">
-        <h1 className="text-3xl font-black text-gray-900 mb-8">
-          Finalizar Reserva
-        </h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="checkout-page-container">
+        <div className="container-custom max-w-6xl">
+          <h1 className="text-3xl font-black text-gray-900 mb-8">
+            Finalizar Reserva
+          </h1>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Formulario de Pago */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Métodos de Pago */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">
-                Método de Pago
-              </h2>
-
-              <div className="space-y-4">
-                {/* Tarjeta */}
-                <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                  paymentMethod === 'card' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary'
-                }`}>
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="card"
-                    checked={paymentMethod === 'card'}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-5 h-5 text-primary"
-                  />
-                  <CreditCard className="w-6 h-6 text-gray-600" />
-                  <span className="font-semibold text-gray-900">
-                    Tarjeta de Crédito/Débito
-                  </span>
-                </label>
-
-                {/* Yape */}
-                <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                  paymentMethod === 'yape' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary'
-                }`}>
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="yape"
-                    checked={paymentMethod === 'yape'}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-5 h-5 text-primary"
-                  />
-                  <div className="w-6 h-6 bg-purple-600 rounded flex items-center justify-center">
-                    <Smartphone className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <span className="font-semibold text-gray-900">Yape</span>
-                    <p className="text-xs text-gray-600">BCP - Billetera digital</p>
-                  </div>
-                </label>
-
-                {/* Plin */}
-                <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                  paymentMethod === 'plin' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary'
-                }`}>
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="plin"
-                    checked={paymentMethod === 'plin'}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-5 h-5 text-primary"
-                  />
-                  <div className="w-6 h-6 bg-cyan-500 rounded flex items-center justify-center">
-                    <Smartphone className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <span className="font-semibold text-gray-900">Plin</span>
-                    <p className="text-xs text-gray-600">Pago móvil multibanco</p>
-                  </div>
-                </label>
-
-                {/* Mercado Pago */}
-                <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                  paymentMethod === 'mercadopago' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary'
-                }`}>
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="mercadopago"
-                    checked={paymentMethod === 'mercadopago'}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-5 h-5 text-primary"
-                  />
-                  <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center text-white font-bold text-xs">
-                    MP
-                  </div>
-                  <div className="flex-1">
-                    <span className="font-semibold text-gray-900">Mercado Pago</span>
-                    <p className="text-xs text-gray-600">Paga seguro y en cuotas</p>
-                  </div>
-                </label>
-
-                {/* PayPal */}
-                <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                  paymentMethod === 'paypal' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary'
-                }`}>
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="paypal"
-                    checked={paymentMethod === 'paypal'}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-5 h-5 text-primary"
-                  />
-                  <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-xs">
-                    P
-                  </div>
-                  <span className="font-semibold text-gray-900">PayPal</span>
-                </label>
-              </div>
-            </div>
-
-            {/* Formulario de Tarjeta */}
-            {paymentMethod === 'card' && (
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Formulario de Pago */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Métodos de Pago */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">
-                  Información de la Tarjeta
+                  Método de Pago
                 </h2>
-
-                <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 mb-6 text-white relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-40 h-40 bg-primary/20 rounded-full blur-3xl"></div>
-                  
-                  <div className="relative z-10">
-                    <div className="mb-8">
-                      <div className="text-xs opacity-70 mb-1">Número de Tarjeta</div>
-                      <div className="text-xl font-mono tracking-wider">
-                        {cardData.cardNumber || '•••• •••• •••• ••••'}
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <div className="text-xs opacity-70 mb-1">Titular</div>
-                        <div className="font-semibold">
-                          {cardData.cardName || 'NOMBRE APELLIDO'}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs opacity-70 mb-1">Vence</div>
-                        <div className="font-mono">
-                          {cardData.expiryDate || 'MM/AA'}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-lg">
-                          {getCardBrand(cardData.cardNumber)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {error && (
-                  <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <p className="text-red-700 text-sm">{error}</p>
-                    </div>
-                  </div>
-                )}
 
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Número de Tarjeta
-                    </label>
+                  {/* Tarjeta */}
+                  <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                    paymentMethod === 'card' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:border-yellow-500'
+                  }`}>
                     <input
-                      type="text"
-                      value={cardData.cardNumber}
-                      onChange={handleCardNumberChange}
-                      placeholder="1234 5678 9012 3456"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none font-mono"
-                      maxLength="19"
+                      type="radio"
+                      name="payment"
+                      value="card"
+                      checked={paymentMethod === 'card'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-5 h-5 text-yellow-500"
                     />
-                  </div>
+                    <CreditCard className="w-6 h-6 text-gray-600" />
+                    <span className="font-semibold text-gray-900">
+                      Tarjeta de Crédito/Débito
+                    </span>
+                  </label>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Nombre en la Tarjeta
-                    </label>
+                  {/* Yape */}
+                  <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                    paymentMethod === 'yape' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:border-yellow-500'
+                  }`}>
                     <input
-                      type="text"
-                      value={cardData.cardName}
-                      onChange={(e) => setCardData({ ...cardData, cardName: e.target.value.toUpperCase() })}
-                      placeholder="JUAN PÉREZ"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none uppercase"
+                      type="radio"
+                      name="payment"
+                      value="yape"
+                      checked={paymentMethod === 'yape'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-5 h-5 text-yellow-500"
                     />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Fecha de Expiración
-                      </label>
-                      <input
-                        type="text"
-                        value={cardData.expiryDate}
-                        onChange={handleExpiryChange}
-                        placeholder="MM/AA"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none font-mono"
-                        maxLength="5"
-                      />
+                    <div className="w-6 h-6 bg-purple-600 rounded flex items-center justify-center">
+                      <Smartphone className="w-4 h-4 text-white" />
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        CVV
-                      </label>
-                      <input
-                        type="text"
-                        value={cardData.cvv}
-                        onChange={(e) => setCardData({ ...cardData, cvv: e.target.value.replace(/\D/g, '') })}
-                        placeholder="123"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none font-mono"
-                        maxLength="4"
-                      />
+                    <div className="flex-1">
+                      <span className="font-semibold text-gray-900">Yape</span>
+                      <p className="text-xs text-gray-600">BCP - Billetera digital</p>
                     </div>
-                  </div>
-                </div>
+                  </label>
 
-                <div className="mt-6 flex items-center gap-2 text-sm text-gray-600">
-                  <Lock className="w-4 h-4" />
-                  <span>Tus datos están protegidos y encriptados</span>
-                </div>
-              </div>
-            )}
-
-            {/* Botón Yape */}
-            {paymentMethod === 'yape' && (
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">
-                  Pago con Yape
-                </h2>
-
-                <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-8 text-white text-center mb-6">
-                  <Smartphone className="w-16 h-16 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold mb-2">Yape</h3>
-                  <p className="text-purple-200 text-sm">BCP - Billetera digital</p>
-                </div>
-
-                <button
-                  onClick={() => setShowYapeModal(true)}
-                  className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 rounded-xl transition-all"
-                >
-                  Continuar con Yape
-                </button>
-              </div>
-            )}
-
-            {/* Botón Plin */}
-            {paymentMethod === 'plin' && (
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">
-                  Pago con Plin
-                </h2>
-
-                <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl p-8 text-white text-center mb-6">
-                  <Smartphone className="w-16 h-16 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold mb-2">Plin</h3>
-                  <p className="text-cyan-100 text-sm">Pago móvil multibanco</p>
-                </div>
-
-                <button
-                  onClick={() => setShowPlinModal(true)}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-4 rounded-xl transition-all"
-                >
-                  Continuar con Plin
-                </button>
-              </div>
-            )}
-
-            {/* Botón Mercado Pago */}
-            {paymentMethod === 'mercadopago' && (
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">
-                  Pago con Mercado Pago
-                </h2>
-
-                <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl p-8 text-white text-center mb-6">
-                  <CreditCard className="w-16 h-16 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold mb-2">Mercado Pago</h3>
-                  <p className="text-blue-100 text-sm">Tu dinero seguro</p>
-                </div>
-
-                <button
-                  onClick={() => setShowMercadoPagoModal(true)}
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 rounded-xl transition-all"
-                >
-                  Continuar con Mercado Pago
-                </button>
-              </div>
-            )}
-
-            {/* PayPal */}
-            {paymentMethod === 'paypal' && (
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">
-                  Pago con PayPal
-                </h2>
-
-                {error && (
-                  <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      <p className="text-red-700 text-sm">{error}</p>
+                  {/* Plin */}
+                  <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                    paymentMethod === 'plin' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:border-yellow-500'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="plin"
+                      checked={paymentMethod === 'plin'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-5 h-5 text-yellow-500"
+                    />
+                    <div className="w-6 h-6 bg-cyan-500 rounded flex items-center justify-center">
+                      <Smartphone className="w-4 h-4 text-white" />
                     </div>
-                  </div>
-                )}
-
-                <div className="bg-blue-50 rounded-xl p-4 mb-6">
-                  <p className="text-sm text-blue-900">
-                    <strong>Total a pagar:</strong> ${totalUSD} USD (aprox. S/. {total.toFixed(2)})
-                  </p>
-                </div>
-
-                <PayPalButton
-                  amount={parseFloat(totalUSD)}
-                  onSuccess={handlePayPalSuccess}
-                  onError={handlePayPalError}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Resumen del Pedido */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">
-                Resumen de la Reserva
-              </h2>
-
-              {/* Items */}
-              <div className="space-y-4 mb-6 pb-6 border-b border-gray-200">
-                {items.map((item, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex gap-3">
-                      <img
-                        src={item.tour_image || 'https://via.placeholder.com/100'}
-                        alt={item.tour_title}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900 text-sm line-clamp-2">
-                          {item.tour_title}
-                        </h4>
-                      </div>
+                    <div className="flex-1">
+                      <span className="font-semibold text-gray-900">Plin</span>
+                      <p className="text-xs text-gray-600">Pago móvil multibanco</p>
                     </div>
-                    
-                    <div className="text-xs text-gray-600 space-y-1">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(item.date).toLocaleDateString('es-PE', { 
-                          day: 'numeric', 
-                          month: 'short', 
-                          year: 'numeric' 
-                        })}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="w-3 h-3" />
-                        {item.adults} adulto{item.adults > 1 ? 's' : ''}
-                        {item.children > 0 && `, ${item.children} niño${item.children > 1 ? 's' : ''}`}
-                        {item.infants > 0 && `, ${item.infants} infante${item.infants > 1 ? 's' : ''}`}
-                      </div>
-                    </div>
+                  </label>
 
-                    <div className="text-right">
-                      <span className="font-bold text-gray-900">
-                        S/. {parseFloat(item.total_price).toFixed(2)}
-                      </span>
+                  {/* Mercado Pago */}
+                  <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                    paymentMethod === 'mercadopago' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:border-yellow-500'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="mercadopago"
+                      checked={paymentMethod === 'mercadopago'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-5 h-5 text-yellow-500"
+                    />
+                    <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center text-white font-bold text-xs">
+                      MP
                     </div>
-                  </div>
-                ))}
-              </div>
+                    <div className="flex-1">
+                      <span className="font-semibold text-gray-900">Mercado Pago</span>
+                      <p className="text-xs text-gray-600">Paga seguro y en cuotas</p>
+                    </div>
+                  </label>
 
-              {/* Total */}
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-gray-700">
-                  <span>Subtotal</span>
-                  <span className="font-semibold">S/. {total.toFixed(2)}</span>
-                </div>
-                {paymentMethod === 'paypal' && (
-                  <div className="flex justify-between text-gray-700">
-                    <span>En USD</span>
-                    <span className="font-semibold">${totalUSD} USD</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-gray-700">
-                  <span>Impuestos y cargos</span>
-                  <span className="font-semibold">S/. 0.00</span>
-                </div>
-                <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-                  <span className="text-xl font-black text-gray-900">Total</span>
-                  <span className="text-2xl font-black text-primary">
-                    S/. {total.toFixed(2)}
-                  </span>
+                  {/* PayPal */}
+                  <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                    paymentMethod === 'paypal' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:border-yellow-500'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="paypal"
+                      checked={paymentMethod === 'paypal'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-5 h-5 text-yellow-500"
+                    />
+                    <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-xs">
+                      P
+                    </div>
+                    <span className="font-semibold text-gray-900">PayPal</span>
+                  </label>
                 </div>
               </div>
 
-              {/* Botón de Pago (Solo para Card) */}
+              {/* Formulario de Tarjeta */}
               {paymentMethod === 'card' && (
-                <button
-                  onClick={handlePayment}
-                  disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 bg-gradient-primary hover:bg-gradient-secondary text-gray-900 font-bold px-6 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Procesando...
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="w-5 h-5" />
-                      Pagar S/. {total.toFixed(2)}
-                    </>
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-6">
+                    Información de la Tarjeta
+                  </h2>
+
+                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 mb-6 text-white relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-yellow-500/20 rounded-full blur-3xl"></div>
+                    
+                    <div className="relative z-10">
+                      <div className="mb-8">
+                        <div className="text-xs opacity-70 mb-1">Número de Tarjeta</div>
+                        <div className="text-xl font-mono tracking-wider">
+                          {cardData.cardNumber || '•••• •••• •••• ••••'}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-end">
+                        <div>
+                          <div className="text-xs opacity-70 mb-1">Titular</div>
+                          <div className="font-semibold">
+                            {cardData.cardName || 'NOMBRE APELLIDO'}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs opacity-70 mb-1">Vence</div>
+                          <div className="font-mono">
+                            {cardData.expiryDate || 'MM/AA'}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-lg">
+                            {getCardBrand(cardData.cardNumber)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-red-700 text-sm">{error}</p>
+                      </div>
+                    </div>
                   )}
-                </button>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Número de Tarjeta
+                      </label>
+                      <input
+                        type="text"
+                        value={cardData.cardNumber}
+                        onChange={handleCardNumberChange}
+                        placeholder="1234 5678 9012 3456"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:outline-none font-mono"
+                        maxLength="19"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Nombre en la Tarjeta
+                      </label>
+                      <input
+                        type="text"
+                        value={cardData.cardName}
+                        onChange={(e) => setCardData({ ...cardData, cardName: e.target.value.toUpperCase() })}
+                        placeholder="JUAN PÉREZ"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:outline-none uppercase"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Fecha de Expiración
+                        </label>
+                        <input
+                          type="text"
+                          value={cardData.expiryDate}
+                          onChange={handleExpiryChange}
+                          placeholder="MM/AA"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:outline-none font-mono"
+                          maxLength="5"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          CVV
+                        </label>
+                        <input
+                          type="text"
+                          value={cardData.cvv}
+                          onChange={(e) => setCardData({ ...cardData, cvv: e.target.value.replace(/\D/g, '') })}
+                          placeholder="123"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-500 focus:outline-none font-mono"
+                          maxLength="4"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex items-center gap-2 text-sm text-gray-600">
+                    <Lock className="w-4 h-4" />
+                    <span>Tus datos están protegidos y encriptados</span>
+                  </div>
+                </div>
               )}
 
+              {/* Botón Yape */}
+              {paymentMethod === 'yape' && (
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-6">
+                    Pago con Yape
+                  </h2>
+
+                  <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-8 text-white text-center mb-6">
+                    <Smartphone className="w-16 h-16 mx-auto mb-4" />
+                    <h3 className="text-2xl font-bold mb-2">Yape</h3>
+                    <p className="text-purple-200 text-sm">BCP - Billetera digital</p>
+                  </div>
+
+                  <button
+                    onClick={() => setShowYapeModal(true)}
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 rounded-xl transition-all"
+                  >
+                    Continuar con Yape
+                  </button>
+                </div>
+              )}
+
+              {/* Botón Plin */}
+              {paymentMethod === 'plin' && (
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-6">
+                    Pago con Plin
+                  </h2>
+
+                  <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl p-8 text-white text-center mb-6">
+                    <Smartphone className="w-16 h-16 mx-auto mb-4" />
+                    <h3 className="text-2xl font-bold mb-2">Plin</h3>
+                    <p className="text-cyan-100 text-sm">Pago móvil multibanco</p>
+                  </div>
+
+                  <button
+                    onClick={() => setShowPlinModal(true)}
+                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-4 rounded-xl transition-all"
+                  >
+                    Continuar con Plin
+                  </button>
+                </div>
+              )}
+
+              {/* Botón Mercado Pago */}
+              {paymentMethod === 'mercadopago' && (
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-6">
+                    Pago con Mercado Pago
+                  </h2>
+
+                  <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl p-8 text-white text-center mb-6">
+                    <CreditCard className="w-16 h-16 mx-auto mb-4" />
+                    <h3 className="text-2xl font-bold mb-2">Mercado Pago</h3>
+                    <p className="text-blue-100 text-sm">Tu dinero seguro</p>
+                  </div>
+
+                  <button
+                    onClick={() => setShowMercadoPagoModal(true)}
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 rounded-xl transition-all"
+                  >
+                    Continuar con Mercado Pago
+                  </button>
+                </div>
+              )}
+
+              {/* PayPal - Contenedor aislado para evitar descuadres */}
               {paymentMethod === 'paypal' && (
-                <p className="text-sm text-gray-600 text-center">
-                  Usa los botones de PayPal arriba para completar tu pago
-                </p>
-              )}
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                  <div className="p-6">
+                    <h2 className="text-xl font-bold text-gray-900 mb-6">
+                      Pago con PayPal
+                    </h2>
 
-              {(paymentMethod === 'yape' || paymentMethod === 'plin' || paymentMethod === 'mercadopago') && (
-                <p className="text-sm text-gray-600 text-center">
-                  Haz clic en el botón arriba para continuar con el pago
-                </p>
-              )}
+                    {error && (
+                      <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6">
+                        <div className="flex items-start gap-3">
+                          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                          <p className="text-red-700 text-sm">{error}</p>
+                        </div>
+                      </div>
+                    )}
 
-              <p className="text-xs text-gray-500 text-center mt-4">
-                {paymentMethod === 'paypal' 
-                  ? '✓ PayPal Sandbox - Usa tu cuenta de prueba' 
-                  : '⚠️ Este es un pago simulado. No se procesarán cargos reales.'}
-              </p>
+                    <div className="bg-blue-50 rounded-xl p-4 mb-6">
+                      <p className="text-sm text-blue-900">
+                        <strong>Total a pagar:</strong> ${totalUSD} USD (aprox. S/. {total.toFixed(2)})
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Contenedor específico para PayPal con estilos aislados */}
+                  <div className="paypal-isolated-container bg-gray-50 p-6 border-t border-gray-200">
+                    <div className="paypal-wrapper">
+                      <PayPalButton
+                        amount={parseFloat(totalUSD)}
+                        onSuccess={handlePayPalSuccess}
+                        onError={handlePayPalError}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Resumen del Pedido */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">
+                  Resumen de la Reserva
+                </h2>
+
+                {/* Items */}
+                <div className="space-y-4 mb-6 pb-6 border-b border-gray-200">
+                  {items.map((item, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex gap-3">
+                        <img
+                          src={item.tour_image || 'https://via.placeholder.com/100'}
+                          alt={item.tour_title}
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900 text-sm line-clamp-2">
+                            {item.tour_title}
+                          </h4>
+                        </div>
+                      </div>
+                      
+                      <div className="text-xs text-gray-600 space-y-1">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(item.date).toLocaleDateString('es-PE', { 
+                            day: 'numeric', 
+                            month: 'short', 
+                            year: 'numeric' 
+                          })}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users className="w-3 h-3" />
+                          {item.adults} adulto{item.adults > 1 ? 's' : ''}
+                          {item.children > 0 && `, ${item.children} niño${item.children > 1 ? 's' : ''}`}
+                          {item.infants > 0 && `, ${item.infants} infante${item.infants > 1 ? 's' : ''}`}
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="font-bold text-gray-900">
+                          S/. {parseFloat(item.total_price).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Total */}
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between text-gray-700">
+                    <span>Subtotal</span>
+                    <span className="font-semibold">S/. {total.toFixed(2)}</span>
+                  </div>
+                  {paymentMethod === 'paypal' && (
+                    <div className="flex justify-between text-gray-700">
+                      <span>En USD</span>
+                      <span className="font-semibold">${totalUSD} USD</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-gray-700">
+                    <span>Impuestos y cargos</span>
+                    <span className="font-semibold">S/. 0.00</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                    <span className="text-xl font-black text-gray-900">Total</span>
+                    <span className="text-2xl font-black text-yellow-500">
+                      S/. {total.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Botón de Pago (Solo para Card) */}
+                {paymentMethod === 'card' && (
+                  <button
+                    onClick={handlePayment}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-bold px-6 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Procesando...
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="w-5 h-5" />
+                        Pagar S/. {total.toFixed(2)}
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {paymentMethod === 'paypal' && (
+                  <p className="text-sm text-gray-600 text-center">
+                    Usa los botones de PayPal arriba para completar tu pago
+                  </p>
+                )}
+
+                {(paymentMethod === 'yape' || paymentMethod === 'plin' || paymentMethod === 'mercadopago') && (
+                  <p className="text-sm text-gray-600 text-center">
+                    Haz clic en el botón arriba para continuar con el pago
+                  </p>
+                )}
+
+                <p className="text-xs text-gray-500 text-center mt-4">
+                  {paymentMethod === 'paypal' 
+                    ? '✓ PayPal Sandbox - Usa tu cuenta de prueba' 
+                    : '⚠️ Este es un pago simulado. No se procesarán cargos reales.'}
+                </p>
+              </div>
             </div>
           </div>
         </div>

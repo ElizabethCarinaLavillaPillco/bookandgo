@@ -3,7 +3,10 @@
 @layer base {
   body {
     @apply font-sans bg-white text-gray-900;
+    
   }
+  
+
 }
 @layer utilities {
   /* Gradientes personalizados */

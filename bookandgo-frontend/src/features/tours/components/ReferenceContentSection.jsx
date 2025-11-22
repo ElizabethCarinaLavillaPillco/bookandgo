@@ -1,6 +1,8 @@
+// src/features/tours/components/ReferenceContentSection.jsx
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Landmark, MapPin, Globe2 } from 'lucide-react';
+import { Landmark, MapPin, Globe2, Star } from 'lucide-react';
 
 const ReferenceContentSection = () => {
   const [activeTab, setActiveTab] = useState('attractions');
@@ -8,72 +10,72 @@ const ReferenceContentSection = () => {
   const tabs = [
     {
       id: 'attractions',
-      label: 'Atracciones Turísticas más Populares',
+      label: 'Atracciones Turísticas',
       icon: Landmark,
     },
     {
       id: 'destinations',
-      label: 'Destinos más Populares',
+      label: 'Destinos Populares',
       icon: MapPin,
     },
     {
       id: 'countries',
-      label: 'Países más Populares',
+      label: 'Países Populares',
       icon: Globe2,
     },
   ];
 
   const content = {
     attractions: [
-      { name: 'Machu Picchu', count: 45 },
-      { name: 'Líneas de Nazca', count: 23 },
-      { name: 'Lago Titicaca', count: 31 },
-      { name: 'Cañón del Colca', count: 28 },
-      { name: 'Islas Ballestas', count: 19 },
-      { name: 'Chan Chan', count: 12 },
-      { name: 'Kuelap', count: 15 },
-      { name: 'Sacsayhuamán', count: 38 },
-      { name: 'Valle Sagrado', count: 42 },
-      { name: 'Paracas', count: 27 },
-      { name: 'Huacachina', count: 18 },
-      { name: 'Montaña de 7 Colores', count: 56 },
-      { name: 'Sillustani', count: 14 },
-      { name: 'Gocta', count: 11 },
-      { name: 'Reserva Nacional de Tambopata', count: 22 },
+      { name: 'Machu Picchu', count: 45, rating: 4.9 },
+      { name: 'Líneas de Nazca', count: 23, rating: 4.6 },
+      { name: 'Lago Titicaca', count: 31, rating: 4.7 },
+      { name: 'Cañón del Colca', count: 28, rating: 4.8 },
+      { name: 'Islas Ballestas', count: 19, rating: 4.5 },
+      { name: 'Chan Chan', count: 12, rating: 4.4 },
+      { name: 'Kuelap', count: 15, rating: 4.6 },
+      { name: 'Sacsayhuamán', count: 38, rating: 4.7 },
+      { name: 'Valle Sagrado', count: 42, rating: 4.8 },
+      { name: 'Paracas', count: 27, rating: 4.6 },
+      { name: 'Huacachina', count: 18, rating: 4.5 },
+      { name: 'Montaña de 7 Colores', count: 56, rating: 4.9 },
+      { name: 'Sillustani', count: 14, rating: 4.5 },
+      { name: 'Gocta', count: 11, rating: 4.6 },
+      { name: 'Reserva Nacional de Tambopata', count: 22, rating: 4.7 },
     ],
     destinations: [
-      { name: 'Cusco', count: 145 },
-      { name: 'Lima', count: 98 },
-      { name: 'Arequipa', count: 67 },
-      { name: 'Paracas', count: 52 },
-      { name: 'Iquitos', count: 41 },
-      { name: 'Puno', count: 38 },
-      { name: 'Huaraz', count: 34 },
-      { name: 'Trujillo', count: 29 },
-      { name: 'Chiclayo', count: 25 },
-      { name: 'Ayacucho', count: 21 },
-      { name: 'Cajamarca', count: 19 },
-      { name: 'Máncora', count: 33 },
-      { name: 'Puerto Maldonado', count: 28 },
-      { name: 'Huancayo', count: 17 },
-      { name: 'Tarapoto', count: 24 },
+      { name: 'Cusco', count: 145, rating: 4.8 },
+      { name: 'Lima', count: 98, rating: 4.6 },
+      { name: 'Arequipa', count: 67, rating: 4.7 },
+      { name: 'Paracas', count: 52, rating: 4.5 },
+      { name: 'Iquitos', count: 41, rating: 4.6 },
+      { name: 'Puno', count: 38, rating: 4.7 },
+      { name: 'Huaraz', count: 34, rating: 4.8 },
+      { name: 'Trujillo', count: 29, rating: 4.5 },
+      { name: 'Chiclayo', count: 25, rating: 4.6 },
+      { name: 'Ayacucho', count: 21, rating: 4.5 },
+      { name: 'Cajamarca', count: 19, rating: 4.6 },
+      { name: 'Máncora', count: 33, rating: 4.7 },
+      { name: 'Puerto Maldonado', count: 28, rating: 4.6 },
+      { name: 'Huancayo', count: 17, rating: 4.5 },
+      { name: 'Tarapoto', count: 24, rating: 4.6 },
     ],
     countries: [
-      { name: 'Perú', count: 567 },
-      { name: 'México', count: 423 },
-      { name: 'Argentina', count: 389 },
-      { name: 'Colombia', count: 356 },
-      { name: 'Chile', count: 298 },
-      { name: 'Brasil', count: 445 },
-      { name: 'Ecuador', count: 234 },
-      { name: 'Bolivia', count: 189 },
-      { name: 'Uruguay', count: 145 },
-      { name: 'Paraguay', count: 98 },
-      { name: 'Venezuela', count: 167 },
-      { name: 'Costa Rica', count: 278 },
-      { name: 'Panamá', count: 156 },
-      { name: 'Guatemala', count: 134 },
-      { name: 'Cuba', count: 201 },
+      { name: 'Perú', count: 567, rating: 4.8 },
+      { name: 'México', count: 423, rating: 4.7 },
+      { name: 'Argentina', count: 389, rating: 4.6 },
+      { name: 'Colombia', count: 356, rating: 4.7 },
+      { name: 'Chile', count: 298, rating: 4.6 },
+      { name: 'Brasil', count: 445, rating: 4.7 },
+      { name: 'Ecuador', count: 234, rating: 4.6 },
+      { name: 'Bolivia', count: 189, rating: 4.5 },
+      { name: 'Uruguay', count: 145, rating: 4.6 },
+      { name: 'Paraguay', count: 98, rating: 4.5 },
+      { name: 'Venezuela', count: 167, rating: 4.6 },
+      { name: 'Costa Rica', count: 278, rating: 4.7 },
+      { name: 'Panamá', count: 156, rating: 4.6 },
+      { name: 'Guatemala', count: 134, rating: 4.5 },
+      { name: 'Cuba', count: 201, rating: 4.6 },
     ],
   };
 
@@ -95,11 +97,11 @@ const ReferenceContentSection = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`group flex items-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 ${
                   activeTab === tab.id
-                    ? 'bg-gradient-primary text-gray-900 shadow-lg scale-105'
-                    : 'bg-white text-gray-600 hover:bg-gray-100 shadow-md'
+                    ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg scale-105'
+                    : 'bg-white text-gray-600 hover:bg-gray-100 shadow-md hover:shadow-lg'
                 }`}
               >
-                <Icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-gray-900' : 'text-primary'}`} />
+                <Icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-white' : 'text-yellow-500'}`} />
                 <span className="hidden sm:inline">{tab.label}</span>
                 <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
               </button>
@@ -113,18 +115,25 @@ const ReferenceContentSection = () => {
             <Link
               key={index}
               to={`/tours?${activeTab === 'countries' ? 'country' : 'location'}=${item.name}`}
-              className="group bg-white rounded-xl p-4 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-primary"
+              className="group bg-white rounded-xl p-4 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100 hover:border-yellow-500"
               style={{ animationDelay: `${index * 0.02}s` }}
             >
-              <h3 className="font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">
+              <h3 className="font-bold text-gray-900 mb-2 group-hover:text-yellow-500 transition-colors truncate">
                 {item.name}
               </h3>
+              
+              {/* Rating */}
+              <div className="flex items-center gap-1 mb-2">
+                <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                <span className="text-sm font-medium text-gray-900">{item.rating}</span>
+              </div>
+              
               <p className="text-sm text-gray-500">
                 {item.count} {item.count === 1 ? 'tour' : 'tours'} y actividades
               </p>
 
               {/* Indicador de hover */}
-              <div className="mt-3 h-1 w-0 group-hover:w-full bg-gradient-to-r from-primary to-secondary transition-all duration-500 rounded-full"></div>
+              <div className="mt-3 h-1 w-0 group-hover:w-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-500 rounded-full"></div>
             </Link>
           ))}
         </div>
@@ -133,7 +142,7 @@ const ReferenceContentSection = () => {
         <div className="text-center mt-12">
           <Link
             to="/tours"
-            className="inline-flex items-center gap-2 bg-gray-900 hover:bg-primary text-white hover:text-gray-900 font-bold px-8 py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             Explorar todos los destinos
             <svg

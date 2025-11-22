@@ -1,4 +1,6 @@
-import { Shield, Gift, Calendar } from 'lucide-react';
+// src/features/tours/components/WhyUsSection.jsx
+
+import { Shield, Gift, Calendar, Award, Users, Clock } from 'lucide-react';
 
 const WhyUsSection = () => {
   const features = [
@@ -14,7 +16,7 @@ const WhyUsSection = () => {
       title: 'Gana Recompensas',
       description:
         'Acumula puntos con cada reserva y canjéalos por descuentos exclusivos en tus próximas aventuras.',
-      color: 'from-primary to-secondary',
+      color: 'from-yellow-400 to-orange-500',
     },
     {
       icon: Calendar,
@@ -25,6 +27,12 @@ const WhyUsSection = () => {
     },
   ];
 
+  const stats = [
+    { icon: Award, value: '95%', label: 'Clientes satisfechos' },
+    { icon: Users, value: '50K+', label: 'Viajeros felices' },
+    { icon: Clock, value: '24/7', label: 'Soporte disponible' },
+  ];
+
   return (
     <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
       <div className="container-custom">
@@ -33,11 +41,11 @@ const WhyUsSection = () => {
           <h2 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4">
             ¿Por qué reservar con nosotros?
           </h2>
-          <div className="w-24 h-1 bg-gradient-primary mx-auto rounded-full"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 mx-auto rounded-full"></div>
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
@@ -56,7 +64,7 @@ const WhyUsSection = () => {
                 </div>
 
                 {/* Título */}
-                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-primary transition-colors">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-yellow-500 transition-colors">
                   {feature.title}
                 </h3>
 
@@ -64,7 +72,27 @@ const WhyUsSection = () => {
                 <p className="text-gray-600 leading-relaxed">{feature.description}</p>
 
                 {/* Línea decorativa */}
-                <div className="mt-6 h-1 w-0 group-hover:w-full bg-gradient-to-r from-primary to-secondary transition-all duration-500 rounded-full"></div>
+                <div className="mt-6 h-1 w-0 group-hover:w-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-500 rounded-full"></div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Estadísticas */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <div
+                key={index}
+                className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-8 text-center animate-fade-in"
+                style={{ animationDelay: `${0.6 + index * 0.1}s` }}
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Icon className="w-8 h-8 text-white" />
+                </div>
+                <div className="text-4xl font-black text-gray-900 mb-2">{stat.value}</div>
+                <div className="text-gray-700 font-medium">{stat.label}</div>
               </div>
             );
           })}
