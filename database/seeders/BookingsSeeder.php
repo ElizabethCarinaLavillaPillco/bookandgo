@@ -23,7 +23,7 @@ class BookingsSeeder extends Seeder
             return;
         }
 
-        // ========== RESERVAS CONFIRMADAS FUTURAS ==========
+        // ========== RESERVAS CONFIRMADAS FUTURAS (SOLO 5 RESERVAS REALES) ==========
         $confirmedBookings = [
             [
                 'customer_index' => 0,
@@ -49,25 +49,9 @@ class BookingsSeeder extends Seeder
                 'status' => 'confirmed',
                 'notes' => 'Somos vegetarianos, ¿es posible adaptar el menú?',
             ],
-            [
-                'customer_index' => 3,
-                'tour_index' => 1, // City Tour Cusco
-                'days_from_now' => 5,
-                'people' => 4,
-                'status' => 'confirmed',
-                'notes' => 'Viajamos con dos niños de 8 y 10 años.',
-            ],
-            [
-                'customer_index' => 4,
-                'tour_index' => 6, // Expedición Amazonas
-                'days_from_now' => 30,
-                'people' => 2,
-                'status' => 'confirmed',
-                'notes' => 'Luna de miel! Esperamos ver muchos delfines rosados.',
-            ],
         ];
 
-        // ========== RESERVAS PENDIENTES DE PAGO ==========
+        // ========== RESERVAS PENDIENTES DE PAGO (SOLO 2) ==========
         $pendingBookings = [
             [
                 'customer_index' => 1,
@@ -77,29 +61,14 @@ class BookingsSeeder extends Seeder
                 'status' => 'pending',
                 'hours_old' => 3,
             ],
-            [
-                'customer_index' => 3,
-                'tour_index' => 4, // Lima Colonial
-                'days_from_now' => 12,
-                'people' => 1,
-                'status' => 'pending',
-                'hours_old' => 1,
-            ],
         ];
 
-        // ========== RESERVAS COMPLETADAS (PASADAS) ==========
+        // ========== RESERVAS COMPLETADAS (PASADAS - SOLO 4) ==========
         $completedBookings = [
             [
                 'customer_index' => 0,
                 'tour_index' => 1, // City Tour Cusco
                 'days_ago' => 5,
-                'people' => 2,
-                'status' => 'completed',
-            ],
-            [
-                'customer_index' => 1,
-                'tour_index' => 0, // Camino Inca
-                'days_ago' => 15,
                 'people' => 2,
                 'status' => 'completed',
             ],
@@ -117,30 +86,9 @@ class BookingsSeeder extends Seeder
                 'people' => 2,
                 'status' => 'completed',
             ],
-            [
-                'customer_index' => 4,
-                'tour_index' => 8, // Paracas
-                'days_ago' => 12,
-                'people' => 4,
-                'status' => 'completed',
-            ],
-            [
-                'customer_index' => 0,
-                'tour_index' => 8, // Rafting
-                'days_ago' => 30,
-                'people' => 3,
-                'status' => 'completed',
-            ],
-            [
-                'customer_index' => 2,
-                'tour_index' => 6, // Expedición Amazonas
-                'days_ago' => 25,
-                'people' => 2,
-                'status' => 'completed',
-            ],
         ];
 
-        // ========== RESERVAS CANCELADAS ==========
+        // ========== RESERVAS CANCELADAS (SOLO 1) ==========
         $cancelledBookings = [
             [
                 'customer_index' => 4,
@@ -150,15 +98,6 @@ class BookingsSeeder extends Seeder
                 'status' => 'cancelled',
                 'cancellation_reason' => 'Cambio de fechas de vacaciones laborales',
                 'cancelled_days_ago' => 3,
-            ],
-            [
-                'customer_index' => 1,
-                'tour_index' => 2, // Montaña 7 Colores
-                'days_from_now' => 10,
-                'people' => 1,
-                'status' => 'cancelled',
-                'cancellation_reason' => 'Problemas de salud, no puedo hacer actividad física intensa',
-                'cancelled_days_ago' => 1,
             ],
         ];
 

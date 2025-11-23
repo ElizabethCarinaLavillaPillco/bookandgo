@@ -26,6 +26,8 @@ import AgencyDashboard from './features/agency/pages/AgencyDashboard';
 import CreateTourPage from './features/agency/pages/CreateTourPage';
 import EditTourPage from './features/agency/pages/EditTourPage';
 import MyToursPage from './features/agency/pages/MyToursPage';
+import AgencyBookingsPage from './features/agency/pages/AgencyBookingsPage';
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -111,6 +113,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['agency']}>
                   <EditTourPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="agency/bookings" 
+              element={
+                <ProtectedRoute allowedRoles={['agency']}>
+                  <AgencyBookingsPage />
                 </ProtectedRoute>
               } 
             />

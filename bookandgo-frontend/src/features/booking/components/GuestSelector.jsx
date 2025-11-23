@@ -1,128 +1,109 @@
 // src/features/booking/components/GuestSelector.jsx
 
-import { Minus, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { Users, Plus, Minus } from 'lucide-react';
 
-const GuestSelector = ({
-  adults,
-  children,
-  infants,
-  minPeople,
-  maxPeople,
-  onAdultsChange,
-  onChildrenChange,
-  onInfantsChange,
+const GuestSelector = ({ 
+  adults, 
+  children, 
+  infants, 
+  minPeople, 
+  maxPeople, 
+  onAdultsChange, 
+  onChildrenChange, 
+  onInfantsChange 
 }) => {
   const totalGuests = adults + children + infants;
 
-  const canIncrement = (type) => {
-    if (type === 'infants') return true; // Infantes no cuentan para el límite
-    return totalGuests < maxPeople;
-  };
-
-  const canDecrement = (type, current) => {
-    if (current <= 0) return false;
-    if (type === 'adults' && current <= 1) return false; // Mínimo 1 adulto
-    return true;
-  };
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Adultos */}
-      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-        <div>
-          <p className="font-bold text-gray-900">Adultos</p>
-          <p className="text-sm text-gray-600">Mayores de 18 años</p>
-        </div>
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
+          <Users className="w-5 h-5 text-yellow-500" />
+          <span className="font-medium text-gray-900">Adultos</span>
+        </div>
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => canDecrement('adults', adults) && onAdultsChange(adults - 1)}
-            disabled={!canDecrement('adults', adults)}
-            className="w-10 h-10 flex items-center justify-center border-2 border-gray-300 rounded-full hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            onClick={() => onAdultsChange(Math.max(1, adults - 1))}
+            disabled={adults <= 1}
+            className="w-8 h-8 rounded-full bg-yellow-100 hover:bg-yellow-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <Minus className="w-4 h-4" />
+            <Minus className="w-4 h-4 text-yellow-600" />
           </button>
-          
-          <span className="w-12 text-center font-bold text-lg">{adults}</span>
-          
+          <span className="w-8 text-center font-semibold text-gray-900">{adults}</span>
           <button
-            onClick={() => canIncrement('adults') && onAdultsChange(adults + 1)}
-            disabled={!canIncrement('adults')}
-            className="w-10 h-10 flex items-center justify-center border-2 border-gray-300 rounded-full hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            onClick={() => onAdultsChange(adults + 1)}
+            disabled={adults >= maxPeople || totalGuests >= maxPeople}
+            className="w-8 h-8 rounded-full bg-yellow-100 hover:bg-yellow-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-yellow-600" />
           </button>
         </div>
       </div>
 
       {/* Niños */}
-      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-        <div>
-          <p className="font-bold text-gray-900">Niños</p>
-          <p className="text-sm text-gray-600">2-17 años (50% descuento)</p>
-        </div>
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
+          <Users className="w-5 h-5 text-yellow-500" />
+          <span className="font-medium text-gray-900">Niños</span>
+          <span className="text-xs text-gray-500">(2-11 años)</span>
+        </div>
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => canDecrement('children', children) && onChildrenChange(children - 1)}
-            disabled={!canDecrement('children', children)}
-            className="w-10 h-10 flex items-center justify-center border-2 border-gray-300 rounded-full hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            onClick={() => onChildrenChange(Math.max(0, children - 1))}
+            disabled={children <= 0}
+            className="w-8 h-8 rounded-full bg-yellow-100 hover:bg-yellow-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <Minus className="w-4 h-4" />
+            <Minus className="w-4 h-4 text-yellow-600" />
           </button>
-          
-          <span className="w-12 text-center font-bold text-lg">{children}</span>
-          
+          <span className="w-8 text-center font-semibold text-gray-900">{children}</span>
           <button
-            onClick={() => canIncrement('children') && onChildrenChange(children + 1)}
-            disabled={!canIncrement('children')}
-            className="w-10 h-10 flex items-center justify-center border-2 border-gray-300 rounded-full hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            onClick={() => onChildrenChange(children + 1)}
+            disabled={totalGuests >= maxPeople}
+            className="w-8 h-8 rounded-full bg-yellow-100 hover:bg-yellow-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-yellow-600" />
           </button>
         </div>
       </div>
 
       {/* Infantes */}
-      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-        <div>
-          <p className="font-bold text-gray-900">Infantes</p>
-          <p className="text-sm text-gray-600">Menores de 2 años (Gratis)</p>
-        </div>
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
+          <Users className="w-5 h-5 text-yellow-500" />
+          <span className="font-medium text-gray-900">Infantes</span>
+          <span className="text-xs text-gray-500">(0-2 años)</span>
+        </div>
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => canDecrement('infants', infants) && onInfantsChange(infants - 1)}
-            disabled={!canDecrement('infants', infants)}
-            className="w-10 h-10 flex items-center justify-center border-2 border-gray-300 rounded-full hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            onClick={() => onInfantsChange(Math.max(0, infants - 1))}
+            disabled={infants <= 0}
+            className="w-8 h-8 rounded-full bg-yellow-100 hover:bg-yellow-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <Minus className="w-4 h-4" />
+            <Minus className="w-4 h-4 text-yellow-600" />
           </button>
-          
-          <span className="w-12 text-center font-bold text-lg">{infants}</span>
-          
+          <span className="w-8 text-center font-semibold text-gray-900">{infants}</span>
           <button
             onClick={() => onInfantsChange(infants + 1)}
-            className="w-10 h-10 flex items-center justify-center border-2 border-gray-300 rounded-full hover:border-primary hover:text-primary transition-all"
+            disabled={totalGuests >= maxPeople}
+            className="w-8 h-8 rounded-full bg-yellow-100 hover:bg-yellow-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-yellow-600" />
           </button>
         </div>
       </div>
 
-      {/* Advertencia de límite */}
-      {totalGuests >= maxPeople && (
-        <div className="bg-orange-50 border-l-4 border-orange-500 p-3 rounded-lg">
-          <p className="text-sm text-orange-700">
-            Has alcanzado la capacidad máxima de {maxPeople} personas para este tour
-          </p>
+      {/* Total */}
+      <div className="mt-4 p-4 bg-yellow-50 rounded-xl">
+        <div className="flex items-center justify-between">
+          <span className="font-medium text-gray-900">Total:</span>
+          <span className="font-bold text-gray-900">{totalGuests} personas</span>
         </div>
-      )}
-
-      {totalGuests < minPeople && (
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-lg">
-          <p className="text-sm text-blue-700">
-            Se requiere un mínimo de {minPeople} personas para este tour
-          </p>
-        </div>
-      )}
+        <p className="text-sm text-yellow-700 mt-1">
+          Capacidad: {minPeople} - {maxPeople} personas
+        </p>
+      </div>
     </div>
   );
 };

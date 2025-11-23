@@ -1,96 +1,159 @@
 // src/features/customer/pages/MyBookingsPage.jsx
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   Calendar, 
   MapPin, 
-  Users, 
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  MessageSquare,
+  Clock, 
+  Users,
   Download,
-  Eye
+  MessageSquare,
+  XCircle,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  Star,
+  ChevronRight
 } from 'lucide-react';
 import api from '../../../shared/utils/api';
+import useAuthStore from '../../../store/authStore';
 
 const MyBookingsPage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+  
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, upcoming, past, cancelled
+  const [error, setError] = useState(null);
+  const [filter, setFilter] = useState('all');
+  const [cancellingId, setCancellingId] = useState(null);
 
   useEffect(() => {
     fetchBookings();
-  }, []);
+  }, [filter]);
 
   const fetchBookings = async () => {
     try {
-      const response = await api.get('/bookings');
-      setBookings(response.data.data || response.data || []);
-    } catch (error) {
-      console.error('Error fetching bookings:', error);
+      setLoading(true);
+      const params = filter !== 'all' ? { status: filter } : {};
+      const response = await api.get('/bookings', { params });
+      setBookings(response.data.data || response.data);
+    } catch (err) {
+      console.error('Error fetching bookings:', err);
+      setError('Error al cargar las reservas');
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusBadge = (status) => {
-    const badges = {
-      pending: {
-        icon: Clock,
-        text: 'Pendiente',
-        class: 'bg-yellow-100 text-yellow-700',
-      },
-      confirmed: {
-        icon: CheckCircle,
-        text: 'Confirmado',
-        class: 'bg-green-100 text-green-700',
-      },
-      completed: {
-        icon: CheckCircle,
-        text: 'Completado',
-        class: 'bg-blue-100 text-blue-700',
-      },
-      cancelled: {
-        icon: XCircle,
-        text: 'Cancelado',
-        class: 'bg-red-100 text-red-700',
-      },
-    };
+  const handleCancelBooking = async (bookingId) => {
+    if (!window.confirm('¿Estás seguro de que deseas cancelar esta reserva?')) {
+      return;
+    }
 
-    const badge = badges[status] || badges.pending;
-    const Icon = badge.icon;
+    try {
+      setCancellingId(bookingId);
+      await api.post(`/bookings/${bookingId}/cancel`, {
+        reason: 'Cancelado por el cliente'
+      });
+      
+      // Actualizar la lista
+      setBookings(bookings.map(booking => 
+        booking.id === bookingId 
+          ? { ...booking, status: 'cancelled' }
+          : booking
+      ));
 
-    return (
-      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${badge.class}`}>
-        <Icon className="w-3 h-3" />
-        {badge.text}
-      </span>
-    );
+      alert('Reserva cancelada exitosamente');
+    } catch (err) {
+      console.error('Error cancelling booking:', err);
+      alert(err.response?.data?.message || 'Error al cancelar la reserva');
+    } finally {
+      setCancellingId(null);
+    }
   };
 
-  const filteredBookings = bookings.filter((booking) => {
-    const bookingDate = new Date(booking.booking_date);
-    const today = new Date();
-
-    switch (filter) {
-      case 'upcoming':
-        return bookingDate >= today && booking.status !== 'cancelled';
-      case 'past':
-        return bookingDate < today || booking.status === 'completed';
-      case 'cancelled':
-        return booking.status === 'cancelled';
-      default:
-        return true;
+  const handleDownloadVoucher = async (bookingId) => {
+    try {
+      const response = await api.get(`/bookings/${bookingId}/documents/voucher`, {
+        responseType: 'blob'
+      });
+      
+      // Crear URL del blob y descargar
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `voucher-${bookingId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading voucher:', err);
+      alert('Error al descargar el voucher. Inténtalo más tarde.');
     }
-  });
+  };
 
-  if (loading) {
+  const handleContactAgency = (booking) => {
+    // Navegar a mensajes o abrir modal de contacto
+    navigate(`/bookings/${booking.id}/messages`);
+  };
+
+  const getStatusConfig = (status) => {
+    const configs = {
+      pending: {
+        label: 'Pendiente',
+        color: 'bg-yellow-100 text-yellow-800',
+        icon: Clock
+      },
+      confirmed: {
+        label: 'Confirmado',
+        color: 'bg-green-100 text-green-800',
+        icon: CheckCircle
+      },
+      cancelled: {
+        label: 'Cancelado',
+        color: 'bg-red-100 text-red-800',
+        icon: XCircle
+      },
+      completed: {
+        label: 'Completado',
+        color: 'bg-blue-100 text-blue-800',
+        icon: CheckCircle
+      },
+      in_progress: {
+        label: 'En progreso',
+        color: 'bg-purple-100 text-purple-800',
+        icon: Clock
+      }
+    };
+    return configs[status] || configs.pending;
+  };
+
+  const canCancelBooking = (booking) => {
+    if (booking.status === 'cancelled' || booking.status === 'completed') {
+      return false;
+    }
+    
+    // Verificar si está dentro del periodo de cancelación
+    const bookingDate = new Date(booking.booking_date);
+    const now = new Date();
+    const hoursUntilBooking = (bookingDate - now) / (1000 * 60 * 60);
+    
+    // Asumiendo 24 horas de cancelación
+    return hoursUntilBooking > 24;
+  };
+
+  const filteredBookings = bookings;
+
+  if (loading && bookings.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-yellow-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 font-medium">Cargando tus reservas...</p>
+        </div>
       </div>
     );
   }
@@ -100,7 +163,7 @@ const MyBookingsPage = () => {
       <div className="container-custom max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-black text-gray-900 mb-2">
+          <h1 className="text-4xl font-black text-gray-900 mb-2">
             Mis Reservas
           </h1>
           <p className="text-gray-600">
@@ -109,43 +172,53 @@ const MyBookingsPage = () => {
         </div>
 
         {/* Filtros */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
           <div className="flex flex-wrap gap-3">
             <button
               onClick={() => setFilter('all')}
-              className={`px-6 py-2 rounded-xl font-semibold transition-all ${
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
                 filter === 'all'
-                  ? 'bg-primary text-gray-900'
+                  ? 'bg-yellow-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              Todas ({bookings.length})
+              Todas
             </button>
             <button
-              onClick={() => setFilter('upcoming')}
-              className={`px-6 py-2 rounded-xl font-semibold transition-all ${
-                filter === 'upcoming'
-                  ? 'bg-primary text-gray-900'
+              onClick={() => setFilter('confirmed')}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                filter === 'confirmed'
+                  ? 'bg-green-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              Próximas
+              Confirmadas
             </button>
             <button
-              onClick={() => setFilter('past')}
-              className={`px-6 py-2 rounded-xl font-semibold transition-all ${
-                filter === 'past'
-                  ? 'bg-primary text-gray-900'
+              onClick={() => setFilter('pending')}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                filter === 'pending'
+                  ? 'bg-yellow-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              Pasadas
+              Pendientes
+            </button>
+            <button
+              onClick={() => setFilter('completed')}
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                filter === 'completed'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Completadas
             </button>
             <button
               onClick={() => setFilter('cancelled')}
-              className={`px-6 py-2 rounded-xl font-semibold transition-all ${
+              className={`px-4 py-2 rounded-lg font-semibold transition-all ${
                 filter === 'cancelled'
-                  ? 'bg-primary text-gray-900'
+                  ? 'bg-red-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -154,159 +227,171 @@ const MyBookingsPage = () => {
           </div>
         </div>
 
+        {/* Error */}
+        {error && (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+              <p className="text-red-700 font-medium">{error}</p>
+            </div>
+          </div>
+        )}
+
         {/* Lista de Reservas */}
         {filteredBookings.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-            <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              No hay reservas
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Calendar className="w-12 h-12 text-gray-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">
+              No tienes reservas
             </h3>
             <p className="text-gray-600 mb-6">
-              {filter === 'all' 
-                ? 'Aún no has reservado ninguna experiencia'
-                : `No tienes reservas ${filter === 'upcoming' ? 'próximas' : filter === 'past' ? 'pasadas' : 'canceladas'}`
-              }
+              Explora nuestros tours y comienza tu aventura
             </p>
-            <Link
-              to="/tours"
-              className="inline-flex items-center gap-2 bg-gradient-primary text-gray-900 font-bold px-6 py-3 rounded-xl hover:bg-gradient-secondary transition-all"
+            <button
+              onClick={() => navigate('/tours')}
+              className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-bold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl"
             >
               Explorar Tours
-            </Link>
+            </button>
           </div>
         ) : (
           <div className="space-y-6">
-            {filteredBookings.map((booking) => (
-              <div
-                key={booking.id}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
-              >
-                <div className="p-6">
-                  <div className="flex flex-col lg:flex-row gap-6">
+            {filteredBookings.map((booking) => {
+              const statusConfig = getStatusConfig(booking.status);
+              const StatusIcon = statusConfig.icon;
+
+              return (
+                <div
+                  key={booking.id}
+                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all"
+                >
+                  <div className="md:flex">
                     {/* Imagen */}
-                    <div className="lg:w-64 flex-shrink-0">
+                    <div className="md:w-64 h-48 md:h-auto relative">
                       <img
                         src={booking.tour?.featured_image || 'https://via.placeholder.com/400x300'}
                         alt={booking.tour?.title}
-                        className="w-full h-48 object-cover rounded-xl"
+                        className="w-full h-full object-cover"
                       />
+                      <div className={`absolute top-4 right-4 ${statusConfig.color} px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1`}>
+                        <StatusIcon className="w-4 h-4" />
+                        {statusConfig.label}
+                      </div>
                     </div>
 
-                    {/* Información */}
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-4">
+                    {/* Contenido */}
+                    <div className="flex-1 p-6">
+                      <div className="flex justify-between items-start mb-4">
                         <div>
                           <h3 className="text-xl font-bold text-gray-900 mb-2">
                             {booking.tour?.title}
                           </h3>
-                          {getStatusBadge(booking.status)}
+                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              {new Date(booking.booking_date).toLocaleDateString('es-PE', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                              })}
+                            </div>
+                            {booking.booking_time && (
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-4 h-4" />
+                                {booking.booking_time}
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <div className="text-right">
                           <p className="text-sm text-gray-600 mb-1">Total pagado</p>
-                          <p className="text-2xl font-black text-primary">
+                          <p className="text-2xl font-black text-yellow-500">
                             S/. {parseFloat(booking.total_price).toFixed(2)}
                           </p>
                         </div>
                       </div>
 
                       {/* Detalles */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <Calendar className="w-5 h-5 text-primary" />
-                          <span>
-                            {new Date(booking.booking_date).toLocaleDateString('es-PE', {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                            })}
-                          </span>
+                      <div className="flex flex-wrap gap-4 mb-4 text-sm text-gray-700">
+                        <div className="flex items-center gap-1">
+                          <Users className="w-4 h-4 text-gray-500" />
+                          {booking.number_of_people} persona{booking.number_of_people > 1 ? 's' : ''}
                         </div>
-
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <Users className="w-5 h-5 text-primary" />
-                          <span>
-                            {booking.adults} adulto{booking.adults > 1 ? 's' : ''}
-                            {booking.children > 0 && `, ${booking.children} niño${booking.children > 1 ? 's' : ''}`}
-                            {booking.infants > 0 && `, ${booking.infants} infante${booking.infants > 1 ? 's' : ''}`}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <MapPin className="w-5 h-5 text-primary" />
-                          <span>
-                            {booking.tour?.location_city}, {booking.tour?.location_region}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <Clock className="w-5 h-5 text-primary" />
-                          <span>
-                            Código: #{booking.id.toString().padStart(6, '0')}
-                          </span>
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-4 h-4 text-gray-500" />
+                          {booking.tour?.location_city}
                         </div>
                       </div>
 
-                      {/* Solicitudes especiales */}
-                      {booking.special_requests && (
-                        <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-lg mb-4">
-                          <p className="text-sm text-blue-800">
-                            <strong>Solicitud especial:</strong> {booking.special_requests}
-                          </p>
-                        </div>
-                      )}
-
                       {/* Acciones */}
                       <div className="flex flex-wrap gap-3">
-                        <Link
-                          to={`/tours/${booking.tour_id}`}
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold rounded-xl transition-all"
+                        <button
+                          onClick={() => handleDownloadVoucher(booking.id)}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all font-medium"
                         >
-                          <Eye className="w-4 h-4" />
-                          Ver Tour
-                        </Link>
-
-                        <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold rounded-xl transition-all">
                           <Download className="w-4 h-4" />
                           Descargar
                         </button>
 
-                        {booking.status === 'confirmed' && (
-                          <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-dark text-gray-900 font-semibold rounded-xl transition-all">
-                            <MessageSquare className="w-4 h-4" />
-                            Contactar
+                        <button
+                          onClick={() => handleContactAgency(booking)}
+                          className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all font-medium"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                          Contactar
+                        </button>
+
+                        {canCancelBooking(booking) && (
+                          <button
+                            onClick={() => handleCancelBooking(booking.id)}
+                            disabled={cancellingId === booking.id}
+                            className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all font-medium disabled:opacity-50"
+                          >
+                            {cancellingId === booking.id ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Cancelando...
+                              </>
+                            ) : (
+                              <>
+                                <XCircle className="w-4 h-4" />
+                                Cancelar
+                              </>
+                            )}
                           </button>
                         )}
 
-                        {booking.status === 'confirmed' && new Date(booking.booking_date) > new Date() && (
-                          <button className="flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 font-semibold rounded-xl transition-all">
-                            <XCircle className="w-4 h-4" />
-                            Cancelar
-                          </button>
-                        )}
+                        <button
+                          onClick={() => navigate(`/tours/${booking.tour_id}`)}
+                          className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-lg transition-all font-medium ml-auto"
+                        >
+                          Ver tour
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
                       </div>
+
+                      {/* Dejar reseña si está completado */}
+                      {booking.status === 'completed' && !booking.review && (
+                        <div className="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+                          <p className="text-sm text-yellow-800 mb-2">
+                            ¿Disfrutaste esta experiencia? ¡Déjanos tu reseña!
+                          </p>
+                          <button
+                            onClick={() => navigate(`/tours/${booking.tour_id}?review=true`)}
+                            className="flex items-center gap-1 text-yellow-700 hover:text-yellow-800 font-medium text-sm"
+                          >
+                            <Star className="w-4 h-4" />
+                            Dejar reseña
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-
-                {/* Timeline (para reservas confirmadas próximas) */}
-                {booking.status === 'confirmed' && new Date(booking.booking_date) > new Date() && (
-                  <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-6 py-4 border-t border-gray-200">
-                    <div className="flex items-center gap-4">
-                      <AlertCircle className="w-5 h-5 text-primary" />
-                      <div>
-                        <p className="font-semibold text-gray-900">
-                          Faltan {Math.ceil((new Date(booking.booking_date) - new Date()) / (1000 * 60 * 60 * 24))} días
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          El operador se pondrá en contacto 48 horas antes
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

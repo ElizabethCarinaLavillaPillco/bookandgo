@@ -87,12 +87,14 @@ const AgencyDashboard = () => {
             value={stats.total_tours || 0}
             color="blue"
           />
-          <StatCard
-            icon={Users}
-            title="Reservas Activas"
-            value={stats.active_bookings || 0}
-            color="green"
-          />
+          <Link to="/agency/bookings">
+            <StatCard
+              icon={Users}
+              title="Reservas Activas"
+              value={stats.active_bookings || 0}
+              color="green"
+            />
+          </Link>
           <StatCard
             icon={DollarSign}
             title="Ingresos Totales"

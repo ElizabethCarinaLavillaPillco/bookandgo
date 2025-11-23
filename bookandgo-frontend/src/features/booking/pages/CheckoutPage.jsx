@@ -100,24 +100,30 @@ const CheckoutPage = () => {
   const createBookings = async (paymentMethodUsed, paymentDetails = {}) => {
     console.log('Creating bookings...', items);
 
-    const bookingPromises = items.map(item => 
-      api.post('/bookings', {
-        tour_id: item.tour_id,
-        booking_date: item.date,
-        adults: item.adults,
-        children: item.children || 0,
-        infants: item.infants || 0,
-        special_requests: item.special_requests || '',
-        total_price: item.total_price,
-        payment_method: paymentMethodUsed,
-        payment_details: JSON.stringify(paymentDetails),
-      })
-    );
+    try {
+      const bookingPromises = items.map(item => 
+        api.post('/bookings', {
+          tour_id: item.tour_id,
+          booking_date: item.date,
+          booking_time: item.time || null,
+          adults: item.adults || 1,
+          children: item.children || 0,
+          infants: item.infants || 0,
+          special_requests: item.special_requests || '',
+          total_price: parseFloat(item.total_price),
+          payment_method: paymentMethodUsed,
+        })
+      );
 
-    const responses = await Promise.all(bookingPromises);
-    console.log('Bookings created:', responses);
-    
-    return responses;
+      const responses = await Promise.all(bookingPromises);
+      console.log('Bookings created:', responses);
+      
+      return responses;
+    } catch (error) {
+      console.error('Error creating bookings:', error);
+      console.error('Error response:', error.response?.data);
+      throw error;
+    }
   };
 
   const completePayment = (paymentMethodUsed, paymentDetails = {}) => {
@@ -181,19 +187,28 @@ const CheckoutPage = () => {
   };
 
   const handleYapeSuccess = async (details) => {
+    setLoading(true);
     isProcessingPayment.current = true;
+    
     try {
+      console.log('Yape payment details:', details);
       await createBookings('yape', details);
       completePayment('yape', details);
     } catch (err) {
       console.error('Error processing Yape payment:', err);
-      setError('Error al procesar el pago con Yape');
+      console.error('Error response:', err.response?.data);
+      setError(err.response?.data?.message || 'Error al procesar el pago con Yape');
       isProcessingPayment.current = false;
+      setShowYapeModal(false);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handlePlinSuccess = async (details) => {
+    setLoading(true);
     isProcessingPayment.current = true;
+    
     try {
       await createBookings('plin', details);
       completePayment('plin', details);
@@ -201,11 +216,16 @@ const CheckoutPage = () => {
       console.error('Error processing Plin payment:', err);
       setError('Error al procesar el pago con Plin');
       isProcessingPayment.current = false;
+      setShowPlinModal(false);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleMercadoPagoSuccess = async (details) => {
+    setLoading(true);
     isProcessingPayment.current = true;
+    
     try {
       await createBookings('mercadopago', details);
       completePayment('mercadopago', details);
@@ -213,6 +233,9 @@ const CheckoutPage = () => {
       console.error('Error processing Mercado Pago payment:', err);
       setError('Error al procesar el pago con Mercado Pago');
       isProcessingPayment.current = false;
+      setShowMercadoPagoModal(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -240,6 +263,15 @@ const CheckoutPage = () => {
           <h1 className="text-3xl font-black text-gray-900 mb-8">
             Finalizar Reserva
           </h1>
+
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <p className="text-red-700 text-sm">{error}</p>
+              </div>
+            </div>
+          )}
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Formulario de Pago */}
@@ -392,15 +424,6 @@ const CheckoutPage = () => {
                     </div>
                   </div>
 
-                  {error && (
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-red-700 text-sm">{error}</p>
-                      </div>
-                    </div>
-                  )}
-
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -482,9 +505,10 @@ const CheckoutPage = () => {
 
                   <button
                     onClick={() => setShowYapeModal(true)}
-                    className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 rounded-xl transition-all"
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-50"
                   >
-                    Continuar con Yape
+                    {loading ? 'Procesando...' : 'Continuar con Yape'}
                   </button>
                 </div>
               )}
@@ -504,9 +528,10 @@ const CheckoutPage = () => {
 
                   <button
                     onClick={() => setShowPlinModal(true)}
-                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-4 rounded-xl transition-all"
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-50"
                   >
-                    Continuar con Plin
+                    {loading ? 'Procesando...' : 'Continuar con Plin'}
                   </button>
                 </div>
               )}
@@ -526,29 +551,21 @@ const CheckoutPage = () => {
 
                   <button
                     onClick={() => setShowMercadoPagoModal(true)}
-                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 rounded-xl transition-all"
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-50"
                   >
-                    Continuar con Mercado Pago
+                    {loading ? 'Procesando...' : 'Continuar con Mercado Pago'}
                   </button>
                 </div>
               )}
 
-              {/* PayPal - Contenedor aislado para evitar descuadres */}
+              {/* PayPal */}
               {paymentMethod === 'paypal' && (
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
                   <div className="p-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-6">
                       Pago con PayPal
                     </h2>
-
-                    {error && (
-                      <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6">
-                        <div className="flex items-start gap-3">
-                          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                          <p className="text-red-700 text-sm">{error}</p>
-                        </div>
-                      </div>
-                    )}
 
                     <div className="bg-blue-50 rounded-xl p-4 mb-6">
                       <p className="text-sm text-blue-900">
@@ -557,7 +574,6 @@ const CheckoutPage = () => {
                     </div>
                   </div>
                   
-                  {/* Contenedor específico para PayPal con estilos aislados */}
                   <div className="paypal-isolated-container bg-gray-50 p-6 border-t border-gray-200">
                     <div className="paypal-wrapper">
                       <PayPalButton
@@ -692,21 +708,30 @@ const CheckoutPage = () => {
       {/* Modales */}
       <YapeModal
         isOpen={showYapeModal}
-        onClose={() => setShowYapeModal(false)}
+        onClose={() => {
+          setShowYapeModal(false);
+          setError(null);
+        }}
         amount={total}
         onSuccess={handleYapeSuccess}
       />
 
       <PlinModal
         isOpen={showPlinModal}
-        onClose={() => setShowPlinModal(false)}
+        onClose={() => {
+          setShowPlinModal(false);
+          setError(null);
+        }}
         amount={total}
         onSuccess={handlePlinSuccess}
       />
 
       <MercadoPagoModal
         isOpen={showMercadoPagoModal}
-        onClose={() => setShowMercadoPagoModal(false)}
+        onClose={() => {
+          setShowMercadoPagoModal(false);
+          setError(null);
+        }}
         amount={total}
         onSuccess={handleMercadoPagoSuccess}
       />

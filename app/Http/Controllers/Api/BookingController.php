@@ -120,7 +120,9 @@ class BookingController extends Controller
                 'customer_email' => $user->email,
                 'customer_phone' => $user->phone ?? '',
                 'special_requirements' => $validated['special_requests'] ?? null,
-                'status' => 'confirmed',
+                'total_revenue' => Booking::where('agency_id', $agencyId)
+                    ->whereIn('status', ['confirmed', 'completed'])
+                    ->sum('total_price'),
                 'confirmed_at' => now(),
             ]);
 

@@ -18,13 +18,14 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SystemSettingsSeeder::class,
             UsersAndAgenciesSeeder::class,
-            AdditionalCustomersSeeder::class, // 👈 NUEVO
+            AdditionalCustomersSeeder::class,
             CategoriesSeeder::class,
             ToursSeeder::class,
-            BookingsSeeder::class,
-            ReviewsSeeder::class,
+            // ❌ COMENTAMOS BOOKINGS Y REVIEWS - Se crearán naturalmente
+            // BookingsSeeder::class,
+            // ReviewsSeeder::class,
             CouponsSeeder::class,
-            BookingDocumentSeeder::class, // 👈 Ya lo tenías
+            // BookingDocumentSeeder::class,
         ]);
         
         $this->command->newLine();
@@ -44,16 +45,7 @@ class DatabaseSeeder extends Seeder
                 ['Categorías', \App\Models\Category::count()],
                 ['Tours Publicados', \App\Models\Tour::where('is_published', true)->count()],
                 ['Tours Destacados', \App\Models\Tour::where('is_featured', true)->count()],
-                ['Reservas Total', \App\Models\Booking::count()],
-                ['├─ Confirmadas', \App\Models\Booking::where('status', 'confirmed')->count()],
-                ['├─ Completadas', \App\Models\Booking::where('status', 'completed')->count()],
-                ['├─ Pendientes', \App\Models\Booking::where('status', 'pending')->count()],
-                ['├─ En Progreso', \App\Models\Booking::where('status', 'in_progress')->count()],
-                ['└─ Canceladas', \App\Models\Booking::where('status', 'cancelled')->count()],
-                ['Pagos Procesados', \App\Models\Payment::count()],
-                ['Reviews Aprobadas', \App\Models\Review::where('is_approved', true)->count()],
                 ['Cupones Activos', \App\Models\Coupon::where('is_active', true)->count()],
-                ['Documentos Generados', \App\Models\BookingDocument::count()],
             ]
         );
         
@@ -76,18 +68,18 @@ class DatabaseSeeder extends Seeder
 
         $this->command->newLine();
         $this->command->info('💡 TIPS:');
-        $this->command->line('  • Los tours tienen diferentes niveles de dificultad y categorías');
-        $this->command->line('  • Hay reservas en todos los estados posibles (pendiente, confirmada, completada, cancelada, en progreso)');
-        $this->command->line('  • Las reviews están asociadas a bookings completados');
-        $this->command->line('  • Los cupones tienen diferentes configuraciones (porcentaje, monto fijo, con/sin expiración)');
+        $this->command->line('  • Los tours están listos con información completa');
+        $this->command->line('  • Las reservas y reviews se crearán cuando los usuarios las hagan');
+        $this->command->line('  • Los cupones están configurados y listos para usar');
         $this->command->line('  • Los clientes son de diferentes países para simular mercado internacional');
         
         $this->command->newLine();
         $this->command->info('🎯 PRÓXIMOS PASOS:');
         $this->command->line('  1. php artisan storage:link (si no lo has hecho)');
-        $this->command->line('  2. Configura tus variables de entorno');
-        $this->command->line('  3. Inicia el servidor: php artisan serve');
-        $this->command->line('  4. Visita: http://localhost:8000');
+        $this->command->line('  2. Inicia el servidor: php artisan serve');
+        $this->command->line('  3. Inicia el frontend: npm run dev');
+        $this->command->line('  4. Crea tu primera reserva como customer');
+        $this->command->line('  5. Gestiona las reservas como agency');
         
         $this->command->newLine();
     }

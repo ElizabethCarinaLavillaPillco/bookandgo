@@ -22,7 +22,7 @@ class AgencyController extends Controller
                 ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
                 ->count(),
             'total_revenue' => Booking::where('agency_id', $agencyId)
-                ->where('status', 'completed')
+                ->whereIn('status', ['confirmed', 'in_progress', 'completed'])
                 ->sum('total_price'),
             'total_reviews' => DB::table('reviews')
                 ->where('agency_id', $agencyId)
@@ -54,6 +54,8 @@ class AgencyController extends Controller
         return response()->json($tours);
     }
 
+
+
     // Dashboard principal
     public function dashboard(Request $request)
     {
@@ -81,6 +83,25 @@ class AgencyController extends Controller
         ];
 
         return response()->json($data);
+    }
+
+    // Listar reservas de la agencia
+    public function bookings(Request $request)
+    {
+        $agencyId = $request->user()->agency->id;
+        
+        $query = Booking::where('agency_id', $agencyId)
+            ->with(['tour.images', 'user', 'payment']);
+
+        // Filtro por estado
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // Ordenar por más reciente
+        $bookings = $query->latest()->paginate($request->per_page ?? 20);
+
+        return response()->json($bookings);
     }
 
     // Ver agencia pública
