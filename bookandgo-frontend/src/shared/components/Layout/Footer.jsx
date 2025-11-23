@@ -17,6 +17,7 @@ const Footer = () => {
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="container-custom py-16">
+        {/* Primera fila con 4 columnas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Columna 1: Marca */}
           <div>
@@ -153,10 +154,10 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Columna 4: Contáctanos y Newsletter */}
+          {/* Columna 4: Contáctanos */}
           <div>
             <h3 className="text-white font-bold text-lg mb-4">Contáctanos</h3>
-            <ul className="space-y-4 mb-6">
+            <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <Mail className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
                 <div>
@@ -198,25 +199,71 @@ const Footer = () => {
                 </span>
               </li>
             </ul>
+          </div>
+        </div>
 
-            {/* Newsletter */}
-            <div className="bg-gray-800 rounded-lg p-4">
-              <h4 className="text-white font-semibold mb-2">Suscríbete a nuestro newsletter</h4>
-              <p className="text-gray-400 text-sm mb-3">Recibe ofertas exclusivas y novedades</p>
-              <form className="flex">
-                <input
-                  type="email"
-                  placeholder="Tu correo electrónico"
-                  className="flex-1 px-3 py-2 bg-gray-700 text-white rounded-l-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                />
-                <button
-                  type="submit"
-                  className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 p-2 rounded-r-lg transition-all"
+        {/* Segunda fila con 2 columnas: Newsletter y Autores */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          {/* Newsletter */}
+          <div className="bg-gray-800 rounded-lg p-4">
+            <h4 className="text-white font-semibold mb-2">Suscríbete a nuestro newsletter</h4>
+            <p className="text-gray-400 text-sm mb-3">Recibe ofertas exclusivas y novedades</p>
+            <form className="flex">
+              <input
+                type="email"
+                placeholder="Tu correo electrónico"
+                className="flex-1 px-3 py-2 bg-gray-700 text-white rounded-l-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              />
+              <button
+                type="submit"
+                className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 p-2 rounded-r-lg transition-all"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </form>
+          </div>
+
+          {/* Autores y Desarrolladores */}
+          <div className="bg-gray-800 rounded-lg p-4">
+            <h4 className="text-white font-semibold mb-3">Autores y desarrolladores</h4>
+            <ul className="space-y-3">
+              <li className="flex items-center justify-between">
+                <span className="text-gray-400 text-sm">Armando Fernando Machaca Gutierrez</span>
+                <a
+                  href="mailto:armando.machaca@example.com"
+                  className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 px-3 py-1 rounded transition-all flex items-center gap-1"
                 >
-                  <Send className="w-5 h-5" />
-                </button>
-              </form>
-            </div>
+                  <Mail className="w-4 h-4" />
+                </a>
+              </li>
+              <li className="flex items-center justify-between">
+                <span className="text-gray-400 text-sm">Elizabeth Carina Lavilla Pillco</span>
+                <a
+                  href="mailto:elizabethcarina21@gmail.com"
+                  className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 px-3 py-1 rounded transition-all flex items-center gap-1"
+                >
+                  <Mail className="w-4 h-4" />
+                </a>
+              </li>
+              <li className="flex items-center justify-between">
+                <span className="text-gray-400 text-sm">Jhojan Vidal Seguil Osores</span>
+                <a
+                  href="mailto:jhojan.vidal@example.com"
+                  className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 px-3 py-1 rounded transition-all flex items-center gap-1"
+                >
+                  <Mail className="w-4 h-4" />
+                </a>
+              </li>
+              <li className="flex items-center justify-between">
+                <span className="text-gray-400 text-sm">Dana Ishaya Nuñez Marroquin</span>
+                <a
+                  href="mailto:dana.nunez@example.com"
+                  className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 px-3 py-1 rounded transition-all flex items-center gap-1"
+                >
+                  <Mail className="w-4 h-4" />
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
 
