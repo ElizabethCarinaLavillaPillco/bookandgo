@@ -1,7 +1,6 @@
 // src/features/tours/components/TourCard.jsx
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Link, useNavigate } from 'react-router-dom'; 
 import { Star, MapPin, Clock, Users, Heart } from 'lucide-react';
 import useAuthStore from '../../../store/authStore';
