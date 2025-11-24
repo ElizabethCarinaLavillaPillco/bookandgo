@@ -73,35 +73,35 @@ class BookingController extends Controller
             'infants' => 'nullable|integer|min:0',
             'special_requests' => 'nullable|string|max:500',
             'total_price' => 'required|numeric|min:0',
-            'payment_method' => 'required|in:card,paypal,transfer',
+            'payment_method' => 'required|in:card,paypal,transfer,yape,plin,mercadopago',
         ]);
-
+    
         $tour = Tour::findOrFail($validated['tour_id']);
         $user = $request->user();
-
+    
         // Calcular total de personas
         $totalPeople = $validated['adults'] + ($validated['children'] ?? 0);
-
+    
         // Validar disponibilidad
         if ($totalPeople > $tour->max_people) {
             return response()->json([
                 'message' => "El tour solo acepta un máximo de {$tour->max_people} personas"
             ], 422);
         }
-
+    
         if ($totalPeople < $tour->min_people) {
             return response()->json([
                 'message' => "El tour requiere un mínimo de {$tour->min_people} personas"
             ], 422);
         }
-
+    
         // Calcular precios
         $pricePerPerson = $tour->discount_price ?? $tour->price;
         $subtotal = $validated['total_price'];
         $tax = $subtotal * 0.00; // Sin impuestos por ahora
         $discount = 0;
         $totalPrice = $subtotal + $tax - $discount;
-
+    
         DB::beginTransaction();
         try {
             $booking = Booking::create([
@@ -120,23 +120,21 @@ class BookingController extends Controller
                 'customer_email' => $user->email,
                 'customer_phone' => $user->phone ?? '',
                 'special_requirements' => $validated['special_requests'] ?? null,
-                'total_revenue' => Booking::where('agency_id', $agencyId)
-                    ->whereIn('status', ['confirmed', 'completed'])
-                    ->sum('total_price'),
+                'status' => 'confirmed', // ✅ Confirmada directamente al crear
                 'confirmed_at' => now(),
             ]);
-
+    
             // Incrementar contador de reservas del tour
             $tour->increment('total_bookings');
-
+    
             DB::commit();
-
+    
             return response()->json([
                 'success' => true,
                 'message' => 'Reserva creada exitosamente',
                 'data' => $booking->load('tour', 'payment')
             ], 201);
-
+    
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([

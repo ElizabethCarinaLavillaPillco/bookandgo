@@ -18,7 +18,7 @@ class PaymentController extends Controller
     {
         $validated = $request->validate([
             'booking_id' => 'required|exists:bookings,id',
-            'payment_method' => 'required|in:credit_card,debit_card,paypal,bank_transfer',
+            'payment_method' => 'required|in:card,paypal,yape,plin,mercadopago,transfer,credit_card,debit_card',
         ]);
 
         $user = $request->user();
