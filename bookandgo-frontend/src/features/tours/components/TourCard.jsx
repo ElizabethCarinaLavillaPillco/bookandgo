@@ -2,13 +2,23 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; 
 import { Star, MapPin, Clock, Users, Heart } from 'lucide-react';
+import useAuthStore from '../../../store/authStore';
 
 const TourCard = ({ tour }) => {
   const [isFavorite, setIsFavorite] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
 
   const toggleFavorite = (e) => {
     e.preventDefault();
+
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
     setIsFavorite(!isFavorite);
   };
 
