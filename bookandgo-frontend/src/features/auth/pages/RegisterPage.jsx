@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { UserPlus, Mail, Lock, User, Phone, Eye, EyeOff, Loader2, AlertCircle, Check, Star, Shield } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, Phone, Eye, EyeOff, Loader2, AlertCircle, Star, Shield } from 'lucide-react';
 import useAuthStore from '../../../store/authStore';
 
 const RegisterPage = () => {
   const [searchParams] = useSearchParams();
   const isAgency = searchParams.get('type') === 'agency';
   const navigate = useNavigate();
+  
+  const { register: registerUser, loading, error, clearError } = useAuthStore();
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -18,7 +20,6 @@ const RegisterPage = () => {
     password_confirmation: '',
     phone: '',
     role: isAgency ? 'agency' : 'customer',
-    // Campos adicionales para agencia
     business_name: '',
     ruc_tax_id: '',
     address: '',
@@ -63,7 +64,6 @@ const RegisterPage = () => {
       newErrors.phone = 'El teléfono es requerido';
     }
 
-    // Validaciones adicionales para agencias
     if (isAgency) {
       if (!formData.business_name.trim()) {
         newErrors.business_name = 'Razón social requerida';
@@ -92,18 +92,12 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const { register, loading, error, clearError } = useAuthStore();
-    
     clearError();
-
-    // Enviar datos al backend
-    const result = await register(formData);
+    const result = await registerUser(formData);
 
     if (result.success) {
       navigate('/');
     } else {
-      // El error ya está en el store
       setErrors({ general: result.error });
     }
   };
@@ -115,6 +109,8 @@ const RegisterPage = () => {
         onBack={() => setStep(1)} 
         isAgency={isAgency}
         onSubmit={handleSubmit}
+        loading={loading}
+        apiError={error}
       />
     );
   }
@@ -122,7 +118,6 @@ const RegisterPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
           <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl mb-6 shadow-xl">
             <UserPlus className="w-12 h-12 text-gray-900" />
@@ -137,10 +132,8 @@ const RegisterPage = () => {
           </p>
         </div>
 
-        {/* Formulario */}
         <div className="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
           <form onSubmit={handleNext} className="space-y-6">
-            {/* Nombre completo */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <User className="w-4 h-4 text-yellow-500" />
@@ -175,7 +168,6 @@ const RegisterPage = () => {
               )}
             </div>
 
-            {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <Mail className="w-4 h-4 text-yellow-500" />
@@ -210,7 +202,6 @@ const RegisterPage = () => {
               )}
             </div>
 
-            {/* Teléfono */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <Phone className="w-4 h-4 text-yellow-500" />
@@ -245,7 +236,6 @@ const RegisterPage = () => {
               )}
             </div>
 
-            {/* Campos adicionales para agencias */}
             {isAgency && (
               <>
                 <div className="border-t pt-6">
@@ -354,7 +344,6 @@ const RegisterPage = () => {
               </>
             )}
 
-            {/* Contraseña */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <Lock className="w-4 h-4 text-yellow-500" />
@@ -396,7 +385,6 @@ const RegisterPage = () => {
               )}
             </div>
 
-            {/* Confirmar contraseña */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <Lock className="w-4 h-4 text-yellow-500" />
@@ -438,7 +426,6 @@ const RegisterPage = () => {
               )}
             </div>
 
-            {/* Botón Continuar */}
             <button
               type="submit"
               className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-bold py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
@@ -447,7 +434,6 @@ const RegisterPage = () => {
             </button>
           </form>
 
-          {/* Link a login */}
           <div className="mt-8 text-center">
             <p className="text-gray-600">
               ¿Ya tienes una cuenta?{' '}
@@ -460,93 +446,30 @@ const RegisterPage = () => {
             </p>
           </div>
         </div>
-
-        {/* Beneficios */}
-        <div className="mt-8 bg-white rounded-2xl shadow-lg p-6 animate-fade-in">
-          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-yellow-500" />
-            {isAgency ? 'Beneficios para agencias' : 'Beneficios para viajeros'}
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <Star className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-900">
-                  {isAgency ? 'Alcance a miles de viajeros' : 'Accede a experiencias únicas'}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {isAgency 
-                    ? 'Conecta con clientes de todo el mundo' 
-                    : 'Descubre tours que no encontrarás en otro lugar'
-                  }
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Star className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-900">
-                  {isAgency ? 'Gestiona tus reservas fácilmente' : 'Reserva de forma segura'}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {isAgency 
-                    ? 'Herramientas sencillas para administrar tus servicios' 
-                    : 'Pagos protegidos con encriptación SSL'
-                  }
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Star className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-gray-900">
-                  {isAgency ? 'Recibe pagos rápidamente' : 'Soporte 24/7'}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {isAgency 
-                    ? 'Procesamiento de pagos rápido y seguro' 
-                    : 'Estamos aquí para ayudarte en cualquier momento'
-                  }
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
 };
 
-// Componente de Términos y Condiciones
-const TermsAndConditionsStep = ({ formData, onBack, isAgency, onSubmit }) => {
+const TermsAndConditionsStep = ({ formData, onBack, isAgency, onSubmit, loading, apiError }) => {
   const [accepted, setAccepted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [localError, setLocalError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!accepted) {
-      setError('Debes aceptar los términos y condiciones');
+      setLocalError('Debes aceptar los términos y condiciones');
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      await onSubmit();
-    } catch (err) {
-      setError('Error al procesar tu solicitud');
-    } finally {
-      setLoading(false);
-    }
+    setLocalError(null);
+    await onSubmit(e);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
           <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl mb-6 shadow-xl">
             <Shield className="w-12 h-12 text-gray-900" />
@@ -559,17 +482,14 @@ const TermsAndConditionsStep = ({ formData, onBack, isAgency, onSubmit }) => {
           </p>
         </div>
 
-        {/* Contenido */}
         <div className="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
-          {/* Error */}
-          {error && (
+          {(localError || apiError) && (
             <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6 animate-fade-in flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <p className="text-red-700 text-sm font-medium">{error}</p>
+              <p className="text-red-700 text-sm font-medium">{localError || apiError}</p>
             </div>
           )}
 
-          {/* Términos (simplificado) */}
           <div className="border border-gray-200 rounded-xl p-6 max-h-64 overflow-y-auto mb-6">
             <div className="space-y-4 text-sm text-gray-600">
               <p className="font-semibold text-gray-900">1. Aceptación de términos</p>
@@ -592,7 +512,6 @@ const TermsAndConditionsStep = ({ formData, onBack, isAgency, onSubmit }) => {
             </div>
           </div>
 
-          {/* Checkbox */}
           <label className="flex items-start gap-3 p-4 rounded-xl border-2 border-gray-200 hover:border-yellow-500 cursor-pointer transition-all mb-6">
             <input
               type="checkbox"
@@ -605,12 +524,12 @@ const TermsAndConditionsStep = ({ formData, onBack, isAgency, onSubmit }) => {
             </span>
           </label>
 
-          {/* Botones */}
           <div className="flex gap-4">
             <button
               type="button"
               onClick={onBack}
-              className="flex-1 border-2 border-gray-300 text-gray-700 font-bold py-4 rounded-xl hover:bg-gray-50 transition-all"
+              disabled={loading}
+              className="flex-1 border-2 border-gray-300 text-gray-700 font-bold py-4 rounded-xl hover:bg-gray-50 transition-all disabled:opacity-50"
             >
               Atrás
             </button>
