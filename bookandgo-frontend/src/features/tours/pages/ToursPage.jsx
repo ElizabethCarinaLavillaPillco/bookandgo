@@ -21,11 +21,7 @@ const ToursPage = () => {
   });
 
   // Estados de filtros
-<<<<<<< HEAD
-  const [filters, setFilters] = useState({
-=======
   const defaultFilters = {
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
     search: searchParams.get('search') || '',
     location: searchParams.get('location') || '',
     minPrice: searchParams.get('min_price') || '',
@@ -35,12 +31,8 @@ const ToursPage = () => {
     duration: searchParams.get('duration') || '',
     difficulty: searchParams.get('difficulty') || '',
     sortBy: searchParams.get('sort_by') || 'created_at',
-<<<<<<< HEAD
-  });
-=======
   };
   const [filters, setFilters] = useState(defaultFilters);
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
 
   useEffect(() => {
     fetchTours();
@@ -102,20 +94,9 @@ const ToursPage = () => {
     }
   };
 
-<<<<<<< HEAD
-  const handleFilterChange = (filterName, value) => {
-    setFilters({ ...filters, [filterName]: value });
-  };
-
-  const applyFilters = () => {
-    const params = new URLSearchParams();
-    
-    // Mapeo de filtros del frontend a parámetros de API
-=======
   const buildParams = (currentFilters) => {
     const params = new URLSearchParams();
 
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
     const apiMapping = {
       search: 'search',
       location: 'location',
@@ -128,19 +109,12 @@ const ToursPage = () => {
       sortBy: 'sort_by',
     };
 
-<<<<<<< HEAD
-    Object.entries(filters).forEach(([key, value]) => {
-=======
     Object.entries(currentFilters).forEach(([key, value]) => {
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
       if (value) {
         const apiKey = apiMapping[key] || key;
         params.append(apiKey, value);
       }
     });
-<<<<<<< HEAD
-    
-=======
 
     return params;
   };
@@ -153,27 +127,10 @@ const ToursPage = () => {
   const applyFilters = (customFilters = filters) => {
     setFilters(customFilters);
     const params = buildParams(customFilters);
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
     setSearchParams(params);
   };
 
   const clearFilters = () => {
-<<<<<<< HEAD
-    setFilters({
-      search: '',
-      location: '',
-      minPrice: '',
-      maxPrice: '',
-      category: '',
-      rating: '',
-      duration: '',
-      difficulty: '',
-      sortBy: 'created_at',
-    });
-    setSearchParams({});
-  };
-
-=======
     setFilters(defaultFilters);
     setSearchParams({});
   };
@@ -188,7 +145,6 @@ const ToursPage = () => {
     applyFilters(updated);
   };
 
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
   const handleLoadMore = () => {
     if (pagination.currentPage < pagination.lastPage) {
       fetchTours(pagination.currentPage + 1);
@@ -257,18 +213,9 @@ const ToursPage = () => {
                 {filters.search && (
                   <span className="px-3 py-1 bg-white text-yellow-700 rounded-full text-sm flex items-center gap-2 border border-yellow-300">
                     Búsqueda: {filters.search}
-<<<<<<< HEAD
-                    <button 
-                      onClick={() => {
-                        handleFilterChange('search', '');
-                        applyFilters();
-                      }}
-                      className="hover:text-yellow-900"
-=======
                     <button
                       onClick={() => removeFilter('search')}
                       className="hover:text-yellow-900 cursor-pointer"
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
                     >
                       ×
                     </button>
@@ -277,18 +224,9 @@ const ToursPage = () => {
                 {filters.location && (
                   <span className="px-3 py-1 bg-white text-yellow-700 rounded-full text-sm flex items-center gap-2 border border-yellow-300">
                     Ubicación: {filters.location}
-<<<<<<< HEAD
-                    <button 
-                      onClick={() => {
-                        handleFilterChange('location', '');
-                        applyFilters();
-                      }}
-                      className="hover:text-yellow-900"
-=======
                     <button
                       onClick={() => removeFilter('location')}
                       className="hover:text-yellow-900 cursor-pointer"
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
                     >
                       ×
                     </button>
@@ -297,19 +235,9 @@ const ToursPage = () => {
                 {(filters.minPrice || filters.maxPrice) && (
                   <span className="px-3 py-1 bg-white text-yellow-700 rounded-full text-sm flex items-center gap-2 border border-yellow-300">
                     S/. {filters.minPrice || '0'} - {filters.maxPrice || '∞'}
-<<<<<<< HEAD
-                    <button 
-                      onClick={() => {
-                        handleFilterChange('minPrice', '');
-                        handleFilterChange('maxPrice', '');
-                        applyFilters();
-                      }}
-                      className="hover:text-yellow-900"
-=======
                     <button
                       onClick={clearPriceRange}
                       className="hover:text-yellow-900 cursor-pointer"
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
                     >
                       ×
                     </button>
@@ -318,18 +246,9 @@ const ToursPage = () => {
                 {filters.category && (
                   <span className="px-3 py-1 bg-white text-yellow-700 rounded-full text-sm flex items-center gap-2 border border-yellow-300">
                     Categoría
-<<<<<<< HEAD
-                    <button 
-                      onClick={() => {
-                        handleFilterChange('category', '');
-                        applyFilters();
-                      }}
-                      className="hover:text-yellow-900"
-=======
                     <button
                       onClick={() => removeFilter('category')}
                       className="hover:text-yellow-900 cursor-pointer"
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
                     >
                       ×
                     </button>
@@ -338,18 +257,9 @@ const ToursPage = () => {
                 {filters.rating && (
                   <span className="px-3 py-1 bg-white text-yellow-700 rounded-full text-sm flex items-center gap-2 border border-yellow-300">
                     Rating: {filters.rating}⭐+
-<<<<<<< HEAD
-                    <button 
-                      onClick={() => {
-                        handleFilterChange('rating', '');
-                        applyFilters();
-                      }}
-                      className="hover:text-yellow-900"
-=======
                     <button
                       onClick={() => removeFilter('rating')}
                       className="hover:text-yellow-900 cursor-pointer"
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
                     >
                       ×
                     </button>
@@ -358,18 +268,9 @@ const ToursPage = () => {
                 {filters.duration && (
                   <span className="px-3 py-1 bg-white text-yellow-700 rounded-full text-sm flex items-center gap-2 border border-yellow-300">
                     Duración
-<<<<<<< HEAD
-                    <button 
-                      onClick={() => {
-                        handleFilterChange('duration', '');
-                        applyFilters();
-                      }}
-                      className="hover:text-yellow-900"
-=======
                     <button
                       onClick={() => removeFilter('duration')}
                       className="hover:text-yellow-900 cursor-pointer"
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
                     >
                       ×
                     </button>
@@ -412,7 +313,7 @@ const ToursPage = () => {
                 {pagination.lastPage > 1 && (
                   <div className="text-center mt-12">
                     {pagination.currentPage < pagination.lastPage ? (
-                      <button 
+                      <button
                         onClick={handleLoadMore}
                         className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-bold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl"
                       >

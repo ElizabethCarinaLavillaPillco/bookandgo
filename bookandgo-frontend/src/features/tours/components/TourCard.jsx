@@ -1,26 +1,5 @@
 // src/features/tours/components/TourCard.jsx
 
-<<<<<<< HEAD
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; 
-import { Star, MapPin, Clock, Users, Heart } from 'lucide-react';
-import useAuthStore from '../../../store/authStore';
-
-const TourCard = ({ tour }) => {
-  const [isFavorite, setIsFavorite] = useState(false);
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
-
-  const toggleFavorite = (e) => {
-    e.preventDefault();
-
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-
-    setIsFavorite(!isFavorite);
-=======
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, MapPin, Clock, Users, Heart } from 'lucide-react';
@@ -76,7 +55,6 @@ const TourCard = ({ tour }) => {
         setFavoriteMessage('Inicia sesión para guardar tus favoritos.');
       }
     }
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
   };
 
   return (
@@ -89,32 +67,16 @@ const TourCard = ({ tour }) => {
         <img
           src={tour.featured_image}
           alt={tour.title}
-<<<<<<< HEAD
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-=======
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
           onError={(e) => {
             e.target.src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800';
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-<<<<<<< HEAD
-        
-=======
-
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
         {/* Badge de categoría */}
         <div className="absolute top-4 left-4 bg-yellow-500 text-gray-900 px-3 py-1 rounded-full text-xs font-bold">
           {tour.category?.name || 'Aventura'}
         </div>
-<<<<<<< HEAD
-        
-        {/* Botón de favoritos */}
-        <button
-          className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full hover:bg-white transition-colors"
-          onClick={toggleFavorite}
-=======
 
         {/* Botón de favoritos */}
         <button
@@ -122,15 +84,11 @@ const TourCard = ({ tour }) => {
           type="button"
           onClick={handleToggleFavorite}
           aria-label={isFavorite ? 'Quitar de favoritos' : 'Guardar en favoritos'}
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
         >
           <Heart
             className={`w-4 h-4 ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-600'}`}
           />
         </button>
-<<<<<<< HEAD
-        
-=======
 
         {favoriteMessage && (
           <div className="absolute top-14 right-4 bg-white/95 text-gray-800 text-xs px-3 py-2 rounded-lg shadow-lg border border-gray-200 max-w-[220px]">
@@ -138,7 +96,6 @@ const TourCard = ({ tour }) => {
           </div>
         )}
 
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
         {/* Badge de descuento */}
         {tour.discount_price && (
           <div className="absolute bottom-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
@@ -209,11 +166,7 @@ const TourCard = ({ tour }) => {
             </div>
             <span className="text-xs text-gray-500">por persona</span>
           </div>
-<<<<<<< HEAD
-          <button className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-2 px-4 rounded-lg transition-colors text-sm">
-=======
           <button className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-2 px-4 rounded-lg transition-colors text-sm cursor-pointer">
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
             Ver más
           </button>
         </div>
@@ -222,8 +175,4 @@ const TourCard = ({ tour }) => {
   );
 };
 
-<<<<<<< HEAD
 export default TourCard;
-=======
-export default TourCard;
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad

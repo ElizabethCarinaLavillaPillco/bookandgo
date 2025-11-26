@@ -3,9 +3,6 @@
 @layer base {
   body {
     @apply font-sans bg-white text-gray-900;
-<<<<<<< HEAD
-    
-=======
 
   }
 
@@ -15,9 +12,8 @@
   input[type="submit"],
   input[type="reset"] {
     @apply cursor-pointer;
->>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
   }
-  
+
 
 }
 @layer utilities {
