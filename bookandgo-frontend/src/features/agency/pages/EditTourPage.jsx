@@ -48,7 +48,7 @@ const EditTourPage = () => {
     try {
       const response = await api.get(`/tours/${id}`);
       const tour = response.data;
-      
+
       setFormData({
         title: tour.title || '',
         category_id: tour.category_id || '',
@@ -137,7 +137,7 @@ const EditTourPage = () => {
             <ArrowLeft className="w-5 h-5" />
             Volver a mis tours
           </button>
-          
+
           <h1 className="text-3xl font-black text-gray-900 mb-2">
             Editar Tour
           </h1>
@@ -149,6 +149,7 @@ const EditTourPage = () => {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2 font-semibold transition-all border-b-2 ${
                   activeTab === tab.id

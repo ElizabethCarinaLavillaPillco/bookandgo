@@ -84,6 +84,21 @@ export const bookingDocumentsApi = {
     api.post(`/bookings/${bookingId}/documents/invoice`, data),
 };
 
+<<<<<<< HEAD
+=======
+// Favoritos
+export const favoritesApi = {
+  list: () => api.get('/favorites'),
+  toggle: (tourId) => api.post(`/favorites/${tourId}/toggle`),
+};
+
+// Reseñas
+export const reviewsApi = {
+  listByTour: (tourId) => api.get('/reviews', { params: { tour_id: tourId } }),
+  createOrUpdate: (payload) => api.post('/reviews', payload),
+};
+
+>>>>>>> 1643ad1faeab49dd0f47432cb5a83da970ffa7ad
 // Mensajes
 export const messagesApi = {
   conversations: () => api.get('/messages/conversations'),

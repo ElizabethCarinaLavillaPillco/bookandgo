@@ -94,6 +94,7 @@ const ReferenceContentSection = () => {
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setActiveTab(tab.id)}
                 className={`group flex items-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 ${
                   activeTab === tab.id
@@ -121,13 +122,13 @@ const ReferenceContentSection = () => {
               <h3 className="font-bold text-gray-900 mb-2 group-hover:text-yellow-500 transition-colors truncate">
                 {item.name}
               </h3>
-              
+
               {/* Rating */}
               <div className="flex items-center gap-1 mb-2">
                 <Star className="w-4 h-4 text-yellow-500 fill-current" />
                 <span className="text-sm font-medium text-gray-900">{item.rating}</span>
               </div>
-              
+
               <p className="text-sm text-gray-500">
                 {item.count} {item.count === 1 ? 'tour' : 'tours'} y actividades
               </p>
